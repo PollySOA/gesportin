@@ -1,0 +1,90 @@
+package net.ausiasmarch.gesportin.service;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
+import net.ausiasmarch.gesportin.entity.CategoriaEntity;
+import net.ausiasmarch.gesportin.exception.ResourceNotFoundException;
+import net.ausiasmarch.gesportin.exception.UnauthorizedException;
+import net.ausiasmarch.gesportin.repository.CategoriaRepository;
+
+@Service
+public class CategoriaService {
+    
+    @Autowired
+    CategoriaRepository categoriaRepository;
+
+    @Autowired
+    SessionService sessionService;
+
+    // ----------------------------CRUD---------------------------------
+    public CategoriaEntity get(Long id){
+        if(!sessionService.isSessionActive()) {
+            // To-Do
+            return new CategoriaEntity();
+            //return categoriaRepository.findByIdAndPublicadoTrue(id).orElseThrow(() -> new ResourceNotFoundException("Category not found or not published"));
+        } else {
+            return categoriaRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Category not found"));
+        }
+    }
+
+    public Page<CategoriaEntity> getPage(Pageable pageable) {
+        if(!sessionService.isSessionActive()) {
+            //To-Do
+            return categoriaRepository.findAll(pageable);
+            //return categoriaRepository.findByPublicadoTrue(pageable);
+        } else {
+            return categoriaRepository.findAll(pageable);
+        }
+    }
+
+    public Long create(CategoriaEntity categoriaEntity) {
+     
+        if(!sessionService.isSessionActive()) {
+            throw new UnauthorizedException("No active session");
+        }
+
+        categoriaRepository.save(categoriaEntity);
+        return categoriaEntity.getId();
+    }
+
+    public Long update(CategoriaEntity categoriaEntity) {
+
+        if (!sessionService.isSessionActive()) {
+            throw new UnauthorizedException("No active session");
+        }
+
+        CategoriaEntity existingCategoria = categoriaRepository.findById(categoriaEntity.getId()).orElseThrow(() -> new ResourceNotFoundException("Category not found"));
+        existingCategoria.setNombre(categoriaEntity.getNombre());
+        categoriaRepository.save(existingCategoria);
+        return existingCategoria.getId();
+    }
+
+    public Long delete(Long id) {
+
+        if (!sessionService.isSessionActive()) {
+            throw new UnauthorizedException("No active session");
+        }
+
+        categoriaRepository.deleteById(id);
+        return id;
+    }
+
+    public Long empty() {
+        if (!sessionService.isSessionActive()) {
+            throw new UnauthorizedException("No active session");
+        }
+
+        Long total = count();
+        categoriaRepository.deleteAll();
+        return total;
+
+    }
+
+    public Long count() {
+        return categoriaRepository.count();
+    }
+
+}
