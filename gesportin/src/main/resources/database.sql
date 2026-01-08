@@ -1,3 +1,4 @@
+
 -- phpMyAdmin SQL Dump
 -- version 5.2.2
 -- https://www.phpmyadmin.net/
@@ -12,42 +13,38 @@ START TRANSACTION;
 SET time_zone = "+00:00";
 
 --
--- Base de datos: `tienda`
+-- Base de datos: `esportin`
 --
 
 -- --------------------------------------------------------
 
---
--- Estructura de tabla para la tabla `equipo`
---
 
 CREATE TABLE `equipo` (
-  `id` bigint NOT NULL,
+  `id` bigint NOT NULL AUTO_INCREMENT,
   `nombre` varchar(255) COLLATE utf32_unicode_ci NOT NULL,
   `id_club` bigint NOT NULL,
   `id_entrenador` bigint NOT NULL,
   `id_categoria` bigint NOT NULL,
   `id_liga` bigint NOT NULL,
-  `id_temporada` bigint NOT NULL
+  `id_temporada` bigint NOT NULL,
+    PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf32 COLLATE=utf32_unicode_ci;
 
---
--- Índices para tablas volcadas
---
 
---
--- Indices de la tabla `equipo`
---
-ALTER TABLE `equipo`
-  ADD PRIMARY KEY (`id`);
+CREATE TABLE jugador (
+  id BIGINT NOT NULL AUTO_INCREMENT,
+  dorsal INT NOT NULL,
+  posicion VARCHAR(50) CHARACTER SET utf32 COLLATE utf32_unicode_ci NOT NULL,
+  capitan TINYINT(1) NOT NULL DEFAULT 0,
+  imagen VARCHAR(255) CHARACTER SET utf32 COLLATE utf32_unicode_ci DEFAULT NULL,
+  id_usuario BIGINT NOT NULL,
+  PRIMARY KEY (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf32 COLLATE=utf32_unicode_ci;
 
---
--- AUTO_INCREMENT de las tablas volcadas
---
 
---
--- AUTO_INCREMENT de la tabla `equipo`
---
-ALTER TABLE `equipo`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT;
 COMMIT;
+
+
+
+
+
