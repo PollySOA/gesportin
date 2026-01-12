@@ -20,8 +20,8 @@ public class JugadorService {
     @Autowired
     AleatorioService oAleatorioService;
 
-    @Autowired
-    SessionService oSessionService;
+    // @Autowired
+    // SessionService oSessionService;
 
     ArrayList<String> posiciones = new ArrayList<>();
 
