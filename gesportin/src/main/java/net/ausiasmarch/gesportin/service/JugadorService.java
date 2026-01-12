@@ -52,11 +52,11 @@ public class JugadorService {
             oJugadorEntity.setPosicion(
                     posiciones.get(oAleatorioService.GenerarNumeroAleatorioEnteroEnRango(0, posiciones.size() - 1)));
             
-            oJugadorEntity.setCapitan(oAleatorioService.GenerarNumeroAleatorioEnteroEnRango(1, 11));
+            oJugadorEntity.setCapitan(oAleatorioService.GenerarNumeroAleatorioEnteroEnRango(1, 50));
 
             oJugadorEntity.setImagen("");
 
-            oJugadorEntity.setId_usuario(oAleatorioService.GenerarNumeroAleatorioEnteroEnRango(1, 10));
+            oJugadorEntity.setId_usuario(oAleatorioService.GenerarNumeroAleatorioEnteroEnRango(1, 50));
             
             // Guardar la entidad en la base de datos
             oJugadorRepository.save(oJugadorEntity);
