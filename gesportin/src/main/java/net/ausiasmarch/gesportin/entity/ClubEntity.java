@@ -42,6 +42,10 @@ public class ClubEntity {
     @Column(name = "fecha_alta", nullable = false)
     private LocalDateTime fechaAlta;
 
+    @Lob
+    @Column(nullable = false)
+    private byte[] imagen;
+
     @NotNull
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "id_presidente")
@@ -58,6 +62,6 @@ public class ClubEntity {
     @OneToMany(mappedBy = "club")
     private List<NoticiaEntity> noticias;
 
-    @OneToMany(mappedBy = "idClub")
+    @OneToMany(mappedBy = "club")
     private List<TipoarticuloEntity> tipoarticulos;
 }
