@@ -56,12 +56,12 @@ public class ClubEntity {
     @JoinColumn(name = "id_vicepresidente")
     private UsuarioEntity vicepresidente;
 
-    @OneToMany(mappedBy = "club")
+    @OneToMany(mappedBy = "club", fetch = FetchType.LAZY)
     private List<TemporadaEntity> temporadas;
 
-    @OneToMany(mappedBy = "club")
+    @OneToMany(mappedBy = "club", fetch = FetchType.LAZY)
     private List<NoticiaEntity> noticias;
 
-    @OneToMany(mappedBy = "club")
+    @OneToMany(mappedBy = "club", fetch = FetchType.LAZY)
     private List<TipoarticuloEntity> tipoarticulos;
 }
