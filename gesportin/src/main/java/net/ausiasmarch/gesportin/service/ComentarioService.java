@@ -46,22 +46,6 @@ public class ComentarioService {
         alComentarios.add("Muy útil para mi proyecto actual.");
     }
 
-    public Long rellenaComentarios(Long numComentarios) {
-        for (long j = 0; j < numComentarios; j++) {
-            ComentarioEntity oComentariosEntity = new ComentarioEntity();    
-            String contenidoGenerado = "";
-            int numFrases = oAleatorioService.generarNumeroAleatorioEnteroEnRango(1, 3);
-            for (int i = 1; i <= numFrases; i++) {
-                contenidoGenerado += alComentarios
-                        .get(oAleatorioService.generarNumeroAleatorioEnteroEnRango(0, alComentarios.size() - 1)) + " ";
-            }
-            oComentariosEntity.setContenido(contenidoGenerado.trim());        
-            oComentariosEntity.setUsuario(oUsuarioService.getOneRandom());
-            oComentariosRepository.save(oComentariosEntity);
-        }
-        return oComentariosRepository.count();
-    }
-
     public ComentarioEntity get(Long id) {
         return oComentariosRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Comentario no encontrado con id: " + id));
@@ -103,6 +87,22 @@ public class ComentarioService {
         oComentariosRepository.deleteAll();
         oComentariosRepository.flush();
         return 0L;
+    }
+
+    public Long fill(Long numComentarios) {
+        for (long j = 0; j < numComentarios; j++) {
+            ComentarioEntity oComentariosEntity = new ComentarioEntity();
+            String contenidoGenerado = "";
+            int numFrases = oAleatorioService.generarNumeroAleatorioEnteroEnRango(1, 3);
+            for (int i = 1; i <= numFrases; i++) {
+                contenidoGenerado += alComentarios
+                        .get(oAleatorioService.generarNumeroAleatorioEnteroEnRango(0, alComentarios.size() - 1)) + " ";
+            }
+            oComentariosEntity.setContenido(contenidoGenerado.trim());
+            oComentariosEntity.setUsuario(oUsuarioService.getOneRandom());
+            oComentariosRepository.save(oComentariosEntity);
+        }
+        return oComentariosRepository.count();
     }
 
 }

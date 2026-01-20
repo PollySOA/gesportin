@@ -46,25 +46,6 @@ public class ComentarioartService {
         alComentarios.add("Muy útil para mi proyecto actual.");
     }
 
-    public Long rellenaComentarios(Long numComentarios) {
-        for (long j = 0; j < numComentarios; j++) {
-            ComentarioartEntity oComentarioartEntity = new ComentarioartEntity();
-
-            // Generar contenido aleatorio
-            String contenidoGenerado = "";
-            int numFrases = oAleatorioService.generarNumeroAleatorioEnteroEnRango(1, 3);
-            for (int i = 1; i <= numFrases; i++) {
-                contenidoGenerado += alComentarios
-                        .get(oAleatorioService.generarNumeroAleatorioEnteroEnRango(0, alComentarios.size() - 1)) + " ";
-            }
-            oComentarioartEntity.setContenido(contenidoGenerado.trim());
-            oComentarioartEntity.setArticulo(oArticuloService.getOneRandom());
-            oComentarioartEntity.setUsuario(oUsuarioService.getOneRandom());
-            oComentarioartRepository.save(oComentarioartEntity);
-        }
-        return oComentarioartRepository.count();
-    }
-
     public ComentarioartEntity get(Long id) {
         return oComentarioartRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Comentarioart no encontrado con id: " + id));
@@ -106,6 +87,25 @@ public class ComentarioartService {
         oComentarioartRepository.deleteAll();
         oComentarioartRepository.flush();
         return 0L;
+    }
+
+    public Long fill(Long numComentarios) {
+        for (long j = 0; j < numComentarios; j++) {
+            ComentarioartEntity oComentarioartEntity = new ComentarioartEntity();
+
+            // Generar contenido aleatorio
+            String contenidoGenerado = "";
+            int numFrases = oAleatorioService.generarNumeroAleatorioEnteroEnRango(1, 3);
+            for (int i = 1; i <= numFrases; i++) {
+                contenidoGenerado += alComentarios
+                        .get(oAleatorioService.generarNumeroAleatorioEnteroEnRango(0, alComentarios.size() - 1)) + " ";
+            }
+            oComentarioartEntity.setContenido(contenidoGenerado.trim());
+            oComentarioartEntity.setArticulo(oArticuloService.getOneRandom());
+            oComentarioartEntity.setUsuario(oUsuarioService.getOneRandom());
+            oComentarioartRepository.save(oComentarioartEntity);
+        }
+        return oComentarioartRepository.count();
     }
 
 }

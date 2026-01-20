@@ -54,7 +54,7 @@ public class ComentarioartApi {
 
     @PostMapping("/fill/{cantidad}")
     public ResponseEntity<Long> fill(@PathVariable Long cantidad) {
-        return ResponseEntity.ok(oComentarioartService.rellenaComentarios(cantidad));
+        return ResponseEntity.ok(oComentarioartService.fill(cantidad));
     }
 
     @DeleteMapping("/empty")
