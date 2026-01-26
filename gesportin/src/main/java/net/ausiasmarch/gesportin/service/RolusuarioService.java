@@ -87,7 +87,7 @@ public class RolusuarioService {
     public Long fill() {
         for (int i = 0; i < descripciones.length; i++) {
             RolusuarioEntity oRolusuario = new RolusuarioEntity();
-            oRolusuario.setDescripcion(descripciones[i % descripciones.length] + " " + (i + 1));
+            oRolusuario.setDescripcion(descripciones[i % descripciones.length]);
             oRolusuarioRepository.save(oRolusuario);
         }
         return (long) descripciones.length;
