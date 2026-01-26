@@ -21,7 +21,7 @@ public class TipoarticuloService {
 
     //private final Random random = new Random();
     private final String[] descripciones = {
-        "Equipación oficial", "Material deportivo", "Accesorios", "Calzado deportivo", "Ropa de entrenamiento",
+        "Material deportivo", "Accesorios", "Calzado deportivo", "Ropa de entrenamiento",
         "Complementos", "Merchandising", "Artículos de portería", "Equipamiento técnico", "Protecciones",
         "Hidratación", "Balones", "Conos y marcadores", "Redes", "Arbitraje",
         "Gimnasio", "Fisioterapia", "Nutrición", "Tecnología deportiva", "Textil técnico",
@@ -83,7 +83,7 @@ public class TipoarticuloService {
     public Long fill(Long cantidad) {
         for (int i = 0; i < cantidad; i++) {
             TipoarticuloEntity oTipoarticulo = new TipoarticuloEntity();
-            oTipoarticulo.setDescripcion(descripciones[i % descripciones.length] + " " + (i + 1));
+            oTipoarticulo.setDescripcion(descripciones[i % descripciones.length]);
             oTipoarticulo.setClub(oClubService.getOneRandom());
             oTipoarticuloRepository.save(oTipoarticulo);
         }

@@ -25,7 +25,7 @@ public class ArticuloService {
     private final Random random = new Random();
 
     private final String[] descripciones = {
-            "Camiseta oficial", "Pantalón corto", "Medias deportivas", "Balón oficial",
+            "Camiseta", "Pantalón corto", "Medias deportivas", "Balón oficial",
             "Zapatillas de fútbol", "Guantes de portero", "Espinilleras", "Sudadera",
             "Chaqueta de chándal", "Mochila deportiva", "Botella de agua", "Bufanda del club",
             "Gorra deportiva", "Muñequeras", "Cinta para el pelo", "Rodilleras",
@@ -39,6 +39,12 @@ public class ArticuloService {
             "Bidón isotérmico", "Portabotellas", "Silbato electrónico", "Tarjetas de árbitro",
             "Marcador deportivo", "Pizarra táctica"
     };
+
+    private final String[] descripciones2 = {
+            "oficial", "de entrenamiento", "de alta calidad", "resistente",
+            "transpirable", "ajustable", "duradero", "verde", "azul", "rojo",
+            "naranja", "de alto rendimiento", "de última generación", "de diseño ergonómico",
+            "de diseño moderno", "de edición limitada", "con tecnología avanzada" };
 
     public ArticuloEntity get(Long id) {
         return oArticuloRepository.findById(id)
@@ -93,12 +99,14 @@ public class ArticuloService {
     public Long fill(Long cantidad) {
         for (int i = 0; i < cantidad; i++) {
             ArticuloEntity oArticulo = new ArticuloEntity();
-            oArticulo.setDescripcion(descripciones[i % descripciones.length] + " " + (i + 1));
+            oArticulo.setDescripcion(descripciones[random.nextInt(descripciones.length)] + " "
+                    + descripciones2[random.nextInt(descripciones2.length)]);
             oArticulo.setPrecio(BigDecimal.valueOf(random.nextDouble() * 100 + 5).setScale(2, RoundingMode.HALF_UP));
             oArticulo.setDescuento(random.nextBoolean()
                     ? BigDecimal.valueOf(random.nextDouble() * 30).setScale(2, RoundingMode.HALF_UP)
                     : null);
             oArticulo.setTipoarticulo(oTipoarticuloService.getOneRandom());
+            oArticulo.set
             oArticuloRepository.save(oArticulo);
         }
         return cantidad;

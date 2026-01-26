@@ -30,8 +30,7 @@ CREATE TABLE `articulo` (
   `precio` decimal(10,2) NOT NULL,
   `descuento` decimal(10,2) DEFAULT NULL,
   `imagen` longblob,
-  `id_tipoarticulo` bigint NOT NULL,
-  `id_club` bigint NOT NULL
+  `id_tipoarticulo` bigint NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf32 COLLATE=utf32_unicode_ci;
 
 -- --------------------------------------------------------
