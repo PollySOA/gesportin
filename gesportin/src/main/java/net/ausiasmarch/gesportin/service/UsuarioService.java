@@ -116,7 +116,12 @@ public class UsuarioService {
             oUsuario.setNombre(nombres[random.nextInt(nombres.length)]);
             oUsuario.setApellido1(apellidos[random.nextInt(apellidos.length)]);
             oUsuario.setApellido2(apellidos[random.nextInt(apellidos.length)]);
-            oUsuario.setUsername("user" + (i + 1) + "_" + random.nextInt(1000));
+
+            String username = oUsuario.getNombre().substring(0, 3).toLowerCase() +
+                    oUsuario.getApellido1().substring(0, 2).toLowerCase() +
+                    oUsuario.getApellido2().substring(0, 3).toLowerCase() +
+                    random.nextInt(10);
+            oUsuario.setUsername(username);
             oUsuario.setPassword("password" + (i + 1));
             oUsuario.setFechaAlta(LocalDateTime.now().minusDays(random.nextInt(365)));
             oUsuario.setGenero(random.nextInt(2));
