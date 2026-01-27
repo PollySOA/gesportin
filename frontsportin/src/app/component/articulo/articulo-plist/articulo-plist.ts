@@ -24,19 +24,17 @@ export class AdminPlist {
   rellenaError: string | null = null;
   publishingId: number | null = null;
   publishingAction: 'publicar' | 'despublicar' | null = null;
-  sortField: string = 'id';
-  sortDirection: 'asc' | 'desc' = 'asc';
 
   // Mensajes y total
   message: string | null = null;
   totalRecords: number = 0;
   private messageTimeout: any = null;
 
-  constructor(private oArticuloService: ArticuloService, private route: ActivatedRoute) { }
-
-  oBotonera: string[] = [];
+  // Variables de ordenamiento
   orderField: string = 'id';
-  orderDirection: string = 'asc';
+  orderDirection: 'asc' | 'desc' = 'asc';
+
+  constructor(private oArticuloService: ArticuloService, private route: ActivatedRoute) { }
 
   ngOnInit() {
     const msg = this.route.snapshot.queryParamMap.get('msg');
@@ -62,7 +60,6 @@ export class AdminPlist {
       next: (data: IPage<IArticulo>) => {
         this.oPage = data;
         this.totalRecords = data?.totalElements ?? 0;
-        // si estamos en una página que supera el límite entonces nos situamos en la ultima disponible
         if (this.numPage > 0 && this.numPage >= data.totalPages) {
           this.numPage = data.totalPages - 1;
           this.getPage();
@@ -83,72 +80,21 @@ export class AdminPlist {
     }
     this.numPage = 0;
     this.getPage();
-    return false;
   }
 
   goToPage(numPage: number) {
     this.numPage = numPage;
     this.getPage();
-    return false;
   }
 
   onRppChange(n: number) {
     this.numRpp = n;
+    this.numPage = 0;
     this.getPage();
-    return false;
   }
 
   onCantidadChange(value: string) {
     this.rellenaCantidad = +value;
-    return false;
   }
-
-  sortBy(field: string) {
-    if (this.sortField === field) {
-      // toggle direction
-      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-    } else {
-      this.sortField = field;
-      this.sortDirection = 'asc';
-    }
-    this.getPage();
-    return false;
-  }
-
-  // publicar(id: number) {
-  //   this.publishingId = id;
-  //   this.publishingAction = 'publicar';
-  //   this.oArticuloService.publicar(id).subscribe({
-  //     next: () => {
-  //       this.publishingId = null;
-  //       this.publishingAction = null;
-  //       this.getPage();
-  //     },
-  //     error: (err: HttpErrorResponse) => {
-  //       console.error(err);
-  //       this.publishingId = null;
-  //       this.publishingAction = null;
-  //     }
-  //   });
-  //   return false;
-  // }
-
-  // despublicar(id: number) {
-  //   this.publishingId = id;
-  //   this.publishingAction = 'despublicar';
-  //   this.oArticuloService.despublicar(id).subscribe({
-  //     next: () => {
-  //       this.publishingId = null;
-  //       this.publishingAction = null;
-  //       this.getPage();
-  //     },
-  //     error: (err: HttpErrorResponse) => {
-  //       console.error(err);
-  //       this.publishingId = null;
-  //       this.publishingAction = null;
-  //     }
-  //   });
-  //   return false;
-  // }
 
 }
