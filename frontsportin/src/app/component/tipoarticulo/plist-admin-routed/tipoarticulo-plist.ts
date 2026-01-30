@@ -7,6 +7,11 @@ import { BotoneraRpp } from '../../shared/botonera-rpp/botonera-rpp';
 import { TipoarticuloService } from '../../../service/tipoarticulo';
 import { TrimPipe } from '../../../pipe/trim-pipe';
 import { RouterLink } from '@angular/router';
+import { Subject } from 'rxjs/internal/Subject';
+import { distinctUntilChanged } from 'rxjs/internal/operators/distinctUntilChanged';
+import { debounceTime } from 'rxjs/internal/operators/debounceTime';
+import { Subscription } from 'rxjs/internal/Subscription';
+import { debounceTimeSearch } from '../../../environment/environment';
 
 @Component({
   selector: 'app-tipoarticulo-plist',
@@ -26,25 +31,58 @@ export class TipoarticuloPlistAdminRouted {
   rellenaError = signal<string>('');
   totalElementsCount = computed(() => this.oPage()?.totalElements ?? 0);
 
+  // Mensajes y total
+  totalRecords = computed(() => this.oPage()?.totalElements ?? 0);
+
+  // Variables de ordenamiento
+  orderField = signal<string>('id');
+  orderDirection = signal<'asc' | 'desc'>('asc');
+
+  // variables de filtro
+  club = signal<number>(0);
+
+  // variables de búsqueda
+  private searchSubject = new Subject<string>();
+  descripcion = signal<string>('');
+  private searchSubscription?: Subscription;
+
   constructor(private oTipoarticuloService: TipoarticuloService) {}
 
   ngOnInit(): void {
     this.getPage();
+
+    // Configurar el debounce para la búsqueda
+    this.searchSubscription = this.searchSubject
+      .pipe(debounceTime(debounceTimeSearch), distinctUntilChanged())
+      .subscribe((searchTerm) => {
+        this.descripcion.set(searchTerm);
+        this.numPage.set(0);
+        this.getPage();
+      });
   }
 
   getPage() {
-    this.oTipoarticuloService.getPage(this.numPage(), this.numRpp()).subscribe({
-      next: (data: IPage<ITipoarticulo>) => {
-        this.oPage.set(data);
-        if (this.numPage() > 0 && this.numPage() >= data.totalPages) {
-          this.numPage.set(data.totalPages - 1);
-          this.getPage();
-        }
-      },
-      error: (error: HttpErrorResponse) => {
-        console.error(error);
-      },
-    });
+    this.oTipoarticuloService
+      .getPage(
+        this.numPage(),
+        this.numRpp(),
+        this.orderField(),
+        this.orderDirection(),
+        this.descripcion(),
+        this.club(),
+      )
+      .subscribe({
+        next: (data: IPage<ITipoarticulo>) => {
+          this.oPage.set(data);
+          if (this.numPage() > 0 && this.numPage() >= data.totalPages) {
+            this.numPage.set(data.totalPages - 1);
+            this.getPage();
+          }
+        },
+        error: (error: HttpErrorResponse) => {
+          console.error(error);
+        },
+      });
   }
 
   doRppChange(rpp: number): void {
@@ -56,5 +94,10 @@ export class TipoarticuloPlistAdminRouted {
   doPageChange(page: number): void {
     this.numPage.set(page);
     this.getPage();
+  }
+
+  onSearchDescription(value: string) {
+    // Emitir el valor al Subject para que sea procesado con debounce
+    this.searchSubject.next(value);
   }
 }

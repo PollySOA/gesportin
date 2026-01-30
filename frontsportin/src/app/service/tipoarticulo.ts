@@ -16,12 +16,26 @@ export class TipoarticuloService {
     rpp: number,
     order: string = '',
     direction: string = '',
+    descripcion: string = '',
+    club: number = 0,
   ): Observable<IPage<ITipoarticulo>> {
     if (order === '') {
       order = 'id';
     }
     if (direction === '') {
       direction = 'asc';
+    }
+    if (club > 0) {
+      return this.oHttp.get<IPage<ITipoarticulo>>(
+        serverURL +
+          `/tipoarticulo?page=${page}&size=${rpp}&sort=${order},${direction}&club=${club}`,
+      );
+    }
+    if (descripcion && descripcion.length > 0) {
+      return this.oHttp.get<IPage<ITipoarticulo>>(
+        serverURL +
+          `/tipoarticulo?page=${page}&size=${rpp}&sort=${order},${direction}&descripcion=${descripcion}`,
+      );
     }
     return this.oHttp.get<IPage<ITipoarticulo>>(
       serverURL + `/tipoarticulo?page=${page}&size=${rpp}&sort=${order},${direction}`,
