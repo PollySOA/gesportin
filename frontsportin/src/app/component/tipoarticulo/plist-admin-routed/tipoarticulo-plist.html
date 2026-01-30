@@ -67,10 +67,11 @@
             <th scope="row">{{ tipoarticulo.id }}</th>
             <td>{{ tipoarticulo.descripcion }}</td>
             <td>
+
               {{ tipoarticulo.club.nombre | trim: 20 }} ({{ tipoarticulo.club.id }})
               <a
                 class="btn btn-warning btn-sm ms-2 float-end"
-                [routerLink]="['/tipoarticulo/', tipoarticulo.club.id]"
+                [routerLink]="['/tipoarticulo', tipoarticulo.club.id]"
                 role="button"
                 title="Editar"
                 ><i class="bi bi-funnel-fill" aria-hidden="true"></i
@@ -85,6 +86,8 @@
                 </a>
               }
             </td>
+
+            <!-- Acciones -->
             <td>
               <div class="d-flex justify-content-center">
                 <div class="btn-group btn-group-sm" role="group" aria-label="Small button group">
