@@ -38,7 +38,7 @@ export class CategoriaPlistAdminRouted {
   orderDirection = signal<'asc' | 'desc'>('asc');
 
   // Variables de filtro
-  tipocategoria = signal<number>(0);
+  tipoarticulo = signal<number>(0);
 
   // Variables de búsqueda
   descripcion = signal<string>('');
@@ -51,9 +51,9 @@ export class CategoriaPlistAdminRouted {
   ) {}
 
   ngOnInit() {
-    const id = this.route.snapshot.paramMap.get('tipocategoria');
+    const id = this.route.snapshot.paramMap.get('tipoarticulo');
     if (id) {
-      this.tipocategoria.set(+id);
+      this.tipoarticulo.set(+id);
     }
 
     // Configurar el debounce para la búsqueda
