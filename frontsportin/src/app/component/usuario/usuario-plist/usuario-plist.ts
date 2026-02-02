@@ -1,19 +1,23 @@
-﻿import { CommonModule } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
+
 import { IPage } from '../../../model/plist';
 import { IUsuario } from '../../../model/usuario';
 import { UsuarioService } from '../../../service/usuarioService';
-import { UsuarioSharedModule } from './usuario-shared.module';
+
+
+import { Paginacion } from '../../shared/paginacion/paginacion';
+import { BotoneraRpp } from '../../shared/botonera-rpp/botonera-rpp';
 
 @Component({
   selector: 'app-usuario-plist',
-  imports: [CommonModule, RouterLink, UsuarioSharedModule],
+  standalone: true,
+  imports: [CommonModule, RouterLink, Paginacion, BotoneraRpp],
   templateUrl: './usuario-plist.html',
   styleUrl: './usuario-plist.css',
-  standalone: true
 })
 export class UsuarioPlist implements OnInit, OnDestroy {
   oPage: IPage<IUsuario> | null = null;
@@ -38,8 +42,8 @@ export class UsuarioPlist implements OnInit, OnDestroy {
   constructor(
     private oUsuarioService: UsuarioService,
     private route: ActivatedRoute,
-    private cdr: ChangeDetectorRef
-  ) { }
+    private cdr: ChangeDetectorRef,
+  ) {}
 
   ngOnInit() {
     this.routeSub = this.route.params.subscribe((params) => {
@@ -49,10 +53,6 @@ export class UsuarioPlist implements OnInit, OnDestroy {
       this.numPage = 0;
       this.getPage();
     });
-
-    if (!this.routeSub) {
-      this.getPage();
-    }
   }
 
   ngOnDestroy() {
@@ -75,17 +75,19 @@ export class UsuarioPlist implements OnInit, OnDestroy {
         this.filtro.trim(),
         this.idTipousuario,
         this.idRol,
-        this.idClub
+        this.idClub,
       )
       .subscribe({
         next: (data: IPage<IUsuario>) => {
           this.oPage = data;
           this.totalElementsCount = data.totalElements ?? 0;
+
           if (this.numPage > 0 && this.numPage >= data.totalPages) {
             this.numPage = data.totalPages - 1;
             this.getPage();
             return;
           }
+
           this.isLoading = false;
           this.cdr.markForCheck();
         },
@@ -94,7 +96,7 @@ export class UsuarioPlist implements OnInit, OnDestroy {
           this.errorMessage = 'No se pudo cargar la lista de usuarios.';
           this.isLoading = false;
           this.cdr.markForCheck();
-        }
+        },
       });
   }
 
@@ -123,9 +125,8 @@ export class UsuarioPlist implements OnInit, OnDestroy {
   }
 
   fillUsuarios() {
-    if (this.isFilling) {
-      return;
-    }
+    if (this.isFilling) return;
+
     this.isFilling = true;
     this.fillErrorMessage = '';
     this.cdr.markForCheck();
@@ -140,7 +141,7 @@ export class UsuarioPlist implements OnInit, OnDestroy {
         this.fillErrorMessage = 'No se pudieron rellenar usuarios.';
         this.isFilling = false;
         this.cdr.markForCheck();
-      }
+      },
     });
   }
 
