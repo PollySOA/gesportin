@@ -29,6 +29,7 @@ import { FacturaViewAdminRouted } from './component/factura/view-admin-routed/fa
 import { ComentarioartPlistAdminRouted } from './component/comentarioart/comentarioart-plist';
 import { ComentarioartViewRouted } from './component/comentarioart/view-routed/comentarioart-view';
 import { CarritoViewAdminRouted } from './component/carrito/view-admin-routed/view-admin-routed';
+import { LigaViewRouted } from './component/liga/view-routed/liga-view';
 
 
 export const routes: Routes = [
@@ -42,6 +43,7 @@ export const routes: Routes = [
     { path: 'temporada', component: TemporadaPlist },
     { path: 'temporada/club/:id_club', component: TemporadaPlist },
     { path: 'liga', component: LigaPlistAdminRouted },
+    { path: 'liga/view/:id', component: LigaViewRouted },
     { path: 'liga/equipo/:id_equipo', component: LigaPlistAdminRouted },
     { path: 'articulo', component: ArticuloPlistAdminRouted},
     { path: 'articulo/tipoarticulo/:id_tipoarticulo', component: ArticuloPlistAdminRouted},
