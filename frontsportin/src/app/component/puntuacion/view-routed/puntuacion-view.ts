@@ -35,14 +35,13 @@ error = signal<string | null>(null);
 
   load(id: number) {
     this.oPuntuacionService.get(id).subscribe({
-      next: (puntuacion) => {
-        this.oPuntuacion.set(puntuacion);
+      next: (data: IPuntuacion) => {
+        this.oPuntuacion.set(data);
         this.loading.set(false);
       },
       error: (err: HttpErrorResponse) => {
         this.error.set('Error al cargar la puntuación');
         this.loading.set(false);
-
         console.error(err);
       },
     });
