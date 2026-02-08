@@ -44,6 +44,7 @@ import { CategoriaViewAdminRouted } from './component/categoria/view-admin-route
 import { LigaViewRouted } from './component/liga/view-routed/liga-view';
 import { ComentarioartViewRouted } from './component/comentarioart/view-routed/comentarioart-view';
 import { PagoDeleteAdminRouted } from './component/pago/delete-admin-routed/pago-delete';
+import { CarritoDeleteAdminRouted } from './component/carrito/delete-admin-routed/carrito-delete';
 
 
 export const routes: Routes = [
@@ -107,6 +108,7 @@ export const routes: Routes = [
     { path: 'carrito/usuario/:id_usuario', component: CarritoPlistAdminRouted },
     { path: 'carrito/articulo/:id_articulo', component: CarritoPlistAdminRouted },
     { path: 'carrito/view/:id', component: CarritoViewAdminRouted },
+    { path: 'carrito/delete/:id', component: CarritoDeleteAdminRouted },
     { path: 'comentario', component: ComentarioPlistAdminRouted },
     { path: 'comentario/usuario/:id_usuario', component: ComentarioPlistAdminRouted},
     { path: 'comentario/noticia/:id_noticia', component: ComentarioPlistAdminRouted},
