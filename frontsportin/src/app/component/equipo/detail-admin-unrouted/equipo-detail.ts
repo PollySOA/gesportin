@@ -16,7 +16,7 @@ import { IEquipo } from '../../../model/equipo';
 export class EquipoDetailAdminUnrouted implements OnInit {
 
   @Input() id: Signal<number> = signal(0);
-  
+
   private oEquipoService = inject(EquipoService);
   //private snackBar = inject(MatSnackBar);
 
@@ -24,7 +24,7 @@ export class EquipoDetailAdminUnrouted implements OnInit {
   loading = signal(true);
   error = signal<string | null>(null);
 
-  ngOnInit(): void {  
+  ngOnInit(): void {
     this.load(this.id());
   }
 

@@ -2,7 +2,7 @@ import { Component, signal, OnInit, inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { IEquipo } from '../../../model/equipo';
-import { EquipoDetailAdminUnrouted} from "../detail-admin-unrouted/equipo-detail";
+import { EquipoDetailAdminUnrouted } from "../detail-admin-unrouted/equipo-detail";
 
 
 @Component({

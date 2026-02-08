@@ -44,7 +44,7 @@ export class PlistEquipo {
   constructor(
     private oEquipoService: EquipoService,
     private route: ActivatedRoute,
-  ) {}
+  ) { }
 
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id_categoria');
