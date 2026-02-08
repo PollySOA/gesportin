@@ -44,6 +44,7 @@ import { CategoriaViewAdminRouted } from './component/categoria/view-admin-route
 import { LigaViewRouted } from './component/liga/view-routed/liga-view';
 import { ComentarioartViewRouted } from './component/comentarioart/view-routed/comentarioart-view';
 import { PagoDeleteAdminRouted } from './component/pago/delete-admin-routed/pago-delete';
+import { PartidoDeleteAdminRouted } from './component/partido/delete-admin-routed/partido-delete';
 
 
 export const routes: Routes = [
@@ -71,6 +72,7 @@ export const routes: Routes = [
     { path: 'partido', component: PartidoPlistAdminRouted},
     { path: 'partido/liga/:id_liga', component: PartidoPlistAdminRouted},
     { path: 'partido/view/:id', component: PartidoViewAdminRouted},
+    { path: 'partido/delete/:id', component: PartidoDeleteAdminRouted },
     { path: 'factura', component: FacturaPlistAdminRouted },
     { path: 'factura/:usuario', component: FacturaPlistAdminRouted },
     { path: 'factura/view/:id', component: FacturaViewAdminRouted },
