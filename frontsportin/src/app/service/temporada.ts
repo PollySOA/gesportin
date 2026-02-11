@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { ITemporada } from '../model/temporada';
 import { IPage } from '../model/plist';
 import { serverURL } from '../environment/environment';
+import { IClub } from '../model/club';
 
 @Injectable({
   providedIn: 'root',
@@ -51,7 +52,16 @@ export class TemporadaService {
     );
   }
 
+  update(temporada: Partial<ITemporada> & { club?: Partial<IClub> }): Observable<ITemporada> {
+    return this.oHttp.put<ITemporada>(`${serverURL}/temporada`, temporada);
+  }
+
+
   count(): Observable<number> {
     return this.oHttp.get<number>(serverURL + '/temporada/count');
+  }
+
+  delete(id: number): Observable<number> {
+    return this.oHttp.delete<number>(serverURL + '/temporada/' + id);
   }
 }
