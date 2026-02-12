@@ -94,16 +94,20 @@
           <th scope="row" style="text-align: center">{{ oPartido.id }}</th>
           <td>{{ oPartido.rival }}</td>
           <td>
-            @if (oPartido.liga) {
-            <a [routerLink]="['/liga', 'view', oPartido.liga.id]">
-              {{ oPartido.liga.nombre | trim:25 }} ({{ oPartido.liga.id }})
-            </a>
-            <a class="btn btn-warning btn-sm ms-2 float-end" [routerLink]="['/partido/liga', oPartido.liga.id]"
-              role="button" title="Filtrar por esta Liga">
-              <i class="bi bi-funnel-fill" aria-hidden="true"></i>
-            </a>
+            @if (isDialogMode()) {
+              {{ oPartido.liga.nombre }}
             } @else {
-            <span class="text-danger">--</span>
+              @if (oPartido.liga) {
+                <a [routerLink]="['/liga', 'view', oPartido.liga.id]">
+                  {{ oPartido.liga.nombre | trim:25 }} ({{ oPartido.liga.id }})
+                </a>
+                <a class="btn btn-warning btn-sm ms-2 float-end" [routerLink]="['/partido/liga', oPartido.liga.id]"
+                  role="button" title="Filtrar por esta Liga">
+                  <i class="bi bi-funnel-fill" aria-hidden="true"></i>
+                </a>
+                } @else {
+                <span class="text-danger">--</span>
+                }
             }
           </td>
           <td style="text-align: center">
@@ -121,16 +125,24 @@
             {{ oPartido.resultado }}
           </td>
           <td>
-            <div class="d-flex justify-content-center">
-              <div class="btn-group btn-group-sm" role="group" aria-label="Small button group">
-                <a class="btn btn-primary btn-sm" [routerLink]="['/partido/view', oPartido.id]" role="button"
-                  title="Ver"><i class="bi bi-eye" aria-hidden="true"></i></a>
-                <a class="btn btn-warning btn-sm" [routerLink]="['/partido/edit', oPartido.id]" role="button"
-                  title="Editar"><i class="bi bi-pencil" aria-hidden="true"></i></a>
-                <a class="btn btn-danger btn-sm" [routerLink]="['/partido/delete', oPartido.id]" role="button"
-                  title="Eliminar"><i class="bi bi-trash" aria-hidden="true"></i></a>
+            @if (isDialogMode()) {
+              <div class="d-flex justify-content-center">
+                <button class="btn btn-success btn-sm" (click)="onSelect(oPartido)" title="Seleccionar">
+                  <i class="bi bi-check-circle" aria-hidden="true"></i> Seleccionar
+                </button>
               </div>
-            </div>
+            } @else {
+              <div class="d-flex justify-content-center">
+                <div class="btn-group btn-group-sm" role="group" aria-label="Small button group">
+                  <a class="btn btn-primary btn-sm" [routerLink]="['/partido/view', oPartido.id]" role="button"
+                    title="Ver"><i class="bi bi-eye" aria-hidden="true"></i></a>
+                  <a class="btn btn-warning btn-sm" [routerLink]="['/partido/edit', oPartido.id]" role="button"
+                    title="Editar"><i class="bi bi-pencil" aria-hidden="true"></i></a>
+                  <a class="btn btn-danger btn-sm" [routerLink]="['/partido/delete', oPartido.id]" role="button"
+                    title="Eliminar"><i class="bi bi-trash" aria-hidden="true"></i></a>
+                </div>
+              </div>
+            }
           </td>
         </tr>
         }

@@ -9,6 +9,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { BotoneraRpp } from '../../shared/botonera-rpp/botonera-rpp';
 import { Paginacion } from '../../shared/paginacion/paginacion';
 import { TrimPipe } from '../../../pipe/trim-pipe';
+import { MatDialogRef } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-partido-plist-admin-unrouted',
@@ -18,9 +19,7 @@ import { TrimPipe } from '../../../pipe/trim-pipe';
   styleUrl: './partido-plist-admin-unrouted.css',
 })
 export class PartidoPlistAdminUnrouted {
-
   @Input() liga = signal<number>(0);
-
 
   oPage = signal<IPage<IPartido> | null>(null);
   numPage = signal<number>(0);
@@ -34,13 +33,11 @@ export class PartidoPlistAdminUnrouted {
   orderDirection = signal<'asc' | 'desc'>('asc');
 
   oPartidoService = inject(PartidoService);
+  private dialogRef = inject(MatDialogRef<PartidoPlistAdminUnrouted>, { optional: true });
 
   ngOnInit() {
     this.searchSubscription = this.searchSubject
-      .pipe(
-        debounceTime(debounceTimeSearch),
-        distinctUntilChanged(),
-      )
+      .pipe(debounceTime(debounceTimeSearch), distinctUntilChanged())
       .subscribe((searchTerm: string) => {
         this.descripcion.set(searchTerm);
         this.numPage.set(0);
@@ -57,32 +54,34 @@ export class PartidoPlistAdminUnrouted {
 
   getPage() {
     let campoParaElServidor = this.orderField();
-    
+
     if (this.orderField() === 'id_liga') {
-        campoParaElServidor = 'liga.id';
+      campoParaElServidor = 'liga.id';
     }
 
-    this.oPartidoService.getPage(
-      this.numPage(), 
-      this.numRpp(), 
-      campoParaElServidor, 
-      this.orderDirection(), 
-      this.descripcion(),
-      this.liga() == null ? 0 : this.liga()!
-    ).subscribe({
-      next: (data: IPage<IPartido>) => {
-        this.oPage.set(data);
+    this.oPartidoService
+      .getPage(
+        this.numPage(),
+        this.numRpp(),
+        campoParaElServidor,
+        this.orderDirection(),
+        this.descripcion(),
+        this.liga() == null ? 0 : this.liga()!,
+      )
+      .subscribe({
+        next: (data: IPage<IPartido>) => {
+          this.oPage.set(data);
 
-        if (this.numPage() > 0 && this.numPage() >= data.totalPages) {
-          this.numPage.set(data.totalPages - 1);
-          this.getPage();
-        }
-      },
-      error: (error: HttpErrorResponse) => {
-        this.strResult.set("Error al cargar: " + error.message);
-        console.error(error);
-      }
-    });
+          if (this.numPage() > 0 && this.numPage() >= data.totalPages) {
+            this.numPage.set(data.totalPages - 1);
+            this.getPage();
+          }
+        },
+        error: (error: HttpErrorResponse) => {
+          this.strResult.set('Error al cargar: ' + error.message);
+          console.error(error);
+        },
+      });
   }
 
   goToPage(nPage: number) {
@@ -108,7 +107,17 @@ export class PartidoPlistAdminUnrouted {
 
   onOrder(field: string) {
     this.orderField.set(field);
-    this.orderDirection.update(current => current === 'asc' ? 'desc' : 'asc');
+    this.orderDirection.update((current) => (current === 'asc' ? 'desc' : 'asc'));
     this.getPage();
   }
+
+  
+    isDialogMode(): boolean {
+      return !!this.dialogRef;
+    }
+  
+    onSelect(tipoarticulo: IPartido): void {
+      this.dialogRef?.close(tipoarticulo);
+    }
+  
 }
