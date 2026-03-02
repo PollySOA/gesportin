@@ -1,7 +1,5 @@
 package net.ausiasmarch.gesportin.entity;
 
-import java.math.BigDecimal;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -33,7 +31,7 @@ public class CompraEntity {
 
     @NotNull
     @Column(nullable = false)
-    private double precio;
+    private Double precio;
 
     @NotNull
     @ManyToOne(fetch = FetchType.EAGER)
