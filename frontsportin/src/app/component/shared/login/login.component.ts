@@ -128,7 +128,7 @@ export class LoginComponent implements OnInit {
 
   fillAdminClub(): void {
     this.loginForm.setValue({
-      username: 'adminclub',
+      username: 'clubadmin',
       password: 'ausias',
     });
   }
