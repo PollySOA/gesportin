@@ -93,6 +93,7 @@ import { CarritoAdminDeletePage } from './page/carrito/admin/delete/delete';
 import { ComentarioartAdminDeletePage } from './page/comentarioart/admin/delete/delete';
 import { FacturaAdminDeletePage } from './page/factura/admin/delete/delete';
 import { FacturaAdminEditPage } from './page/factura/admin/edit/edit';
+import { FacturaAdminNewPage } from './page/factura/admin/new/new';
 import { CarritoAdminEditPage } from './page/carrito/admin/edit/edit';
 import { CuotaAdminEditPage } from './page/cuota/admin/edit/edit';
 import { JugadorAdminDeletePage } from './page/jugador/admin/delete/delete';
@@ -199,11 +200,12 @@ const protectedRoutes: Routes = [
   { path: 'partido/delete/:id', component: PartidoAdminDeletePage, data: { allowClubAdmin: true } },
 
   { path: 'factura', component: FacturaAdminPlistPage, data: { allowClubAdmin: true } },
-  { path: 'factura/:usuario', component: FacturaAdminPlistPage, data: { allowClubAdmin: true } },
+  { path: 'factura/new', component: FacturaAdminNewPage },
   { path: 'factura/view/:id', component: FacturaAdminViewPage, data: { allowClubAdmin: true } },
   { path: 'factura/usuario/:id_usuario', component: FacturaAdminPlistPage, data: { allowClubAdmin: true } },
   { path: 'factura/delete/:id', component: FacturaAdminDeletePage },
   { path: 'factura/edit/:id', component: FacturaAdminEditPage },
+  { path: 'factura/:usuario', component: FacturaAdminPlistPage, data: { allowClubAdmin: true } },
 
   { path: 'compra', component: CompraAdminPlistPage, data: { allowClubAdmin: true } },
   { path: 'compra/articulo/:id_articulo', component: CompraAdminPlistPage, data: { allowClubAdmin: true } },

@@ -177,7 +177,15 @@
                           }
                         </td>
                         <td class="text-center">
-                          <app-botonera-actions-plist [id]="oJugador.id" strEntity="jugador"></app-botonera-actions-plist>
+                          @if (isDialogMode()) {
+                            <div class="d-flex justify-content-center">
+                              <button class="btn btn-success btn-sm" (click)="onSelect(oJugador)" title="Seleccionar">
+                                <i class="bi bi-check-circle" aria-hidden="true"></i> Seleccionar
+                              </button>
+                            </div>
+                          } @else {
+                            <app-botonera-actions-plist [id]="oJugador.id" strEntity="jugador"></app-botonera-actions-plist>
+                          }
                         </td>
                       </tr>
                     }
