@@ -1,3 +1,13 @@
+nav .breadcrumb {
+  border-style: dashed;
+  border-color: darkslateblue;
+  border-radius: 10px;
+  border-width: 1px;
+  background-color: rgb(255, 241, 214); 
+  padding: 20px;
+  margin: 20px 0;
+}
+
 .breadcrumb {
   font-size: 0.85rem;
   background: none;
