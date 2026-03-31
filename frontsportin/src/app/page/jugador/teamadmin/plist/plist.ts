@@ -10,13 +10,18 @@ import { JugadorTeamadminPlist } from '../../../../component/jugador/teamadmin/p
 })
 export class JugadorTeamadminPlistPage {
   id_equipo = signal<number | undefined>(undefined);
+  id_usuario = signal<number | undefined>(undefined);
 
   constructor(private route: ActivatedRoute) {}
 
   ngOnInit(): void {
-    const idParam = this.route.snapshot.paramMap.get('id_equipo');
-    if (idParam) {
-      this.id_equipo.set(Number(idParam));
+    const idEquipoParam = this.route.snapshot.paramMap.get('id_equipo');
+    if (idEquipoParam) {
+      this.id_equipo.set(Number(idEquipoParam));
+    }
+    const idUsuarioParam = this.route.snapshot.paramMap.get('id_usuario');
+    if (idUsuarioParam) {
+      this.id_usuario.set(Number(idUsuarioParam));
     }
   }
 }

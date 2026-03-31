@@ -1,6 +1,7 @@
 import { Component, inject, Input, OnInit, signal } from '@angular/core';
 import { JugadorAdminPlist } from '../../../jugador/admin/plist/plist';
 import { EquipoService } from '../../../../service/equipo';
+import { UsuarioService } from '../../../../service/usuarioService';
 import { BreadcrumbComponent, BreadcrumbItem } from '../../../shared/breadcrumb/breadcrumb';
 
 @Component({
@@ -12,6 +13,7 @@ import { BreadcrumbComponent, BreadcrumbItem } from '../../../shared/breadcrumb/
 })
 export class JugadorTeamadminPlist implements OnInit {
   @Input() id_equipo?: number;
+  @Input() id_usuario?: number;
 
   breadcrumbItems = signal<BreadcrumbItem[]>([
     { label: 'Mis Clubes', route: '/club/teamadmin' },
@@ -22,6 +24,7 @@ export class JugadorTeamadminPlist implements OnInit {
   ]);
 
   private oEquipoService = inject(EquipoService);
+  private oUsuarioService = inject(UsuarioService);
 
   ngOnInit(): void {
     if (this.id_equipo && this.id_equipo > 0) {
@@ -46,6 +49,18 @@ export class JugadorTeamadminPlist implements OnInit {
           }
           items.push({ label: 'Jugadores' });
           this.breadcrumbItems.set(items);
+        },
+        error: () => {},
+      });
+    } else if (this.id_usuario && this.id_usuario > 0) {
+      this.oUsuarioService.get(this.id_usuario).subscribe({
+        next: (u) => {
+          this.breadcrumbItems.set([
+            { label: 'Mis Clubes', route: '/club/teamadmin' },
+            { label: 'Usuarios', route: '/usuario/teamadmin' },
+            { label: `${u.nombre} ${u.apellido1}`, route: `/usuario/teamadmin/view/${u.id}` },
+            { label: 'Jugadores' },
+          ]);
         },
         error: () => {},
       });

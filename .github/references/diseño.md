@@ -624,7 +624,7 @@ Mis Clubes
 ├── Temporadas
 │   └── Categorías
 │       └── Equipos
-│           ├── Jugadores
+│           ├── Jugadores   ← también accesible desde Usuarios (ruta dual, ver Sección 13)
 │           ├── Cuotas → Pagos
 │           └── Ligas → Partidos
 ├── Noticias
@@ -636,6 +636,7 @@ Mis Clubes
 │       ├── Compras
 │       └── Carritos
 ├── Usuarios
+│   ├── Jugadores   ← misma entidad que en Equipos, breadcrumb alternativo (ver Sección 13)
 │   └── Facturas
 └── (entidades de solo lectura para el club admin)
 ```
@@ -1126,6 +1127,9 @@ Mismas reglas que el perfil Administrador (Secciones 5.5, 5.7 y 5.8 del perfil i
   <app-<entidad>-teamadmin-plist [categoria]="categoria()" [usuario]="usuario()">
   </app-<entidad>-teamadmin-plist>
   ```
+- Cuando el plist puede recibir **múltiples parámetros de ruta** distintos (rutas duales),
+  la página declara un signal por cada parámetro posible y los lee todos en `ngOnInit()`.
+  Ver **Sección 13** para el patrón completo de rutas duales y breadcrumbs contextuales.
 
 ### 7.2 Página `view` (wrapper del componente detail)
 
@@ -1294,3 +1298,173 @@ El modo diálogo funciona igual que en el perfil Administrador (Sección 9 del p
 - En modo diálogo: se oculta el botón de creación, se simplifican los enlaces, cada fila/tarjeta
   tiene `cursor: pointer` y al hacer clic llama a `onSelect(oEntidad)` que cierra el modal
   devolviendo el registro.
+
+---
+
+## 13. Rutas duales y breadcrumbs contextuales en plist teamadmin
+
+Algunos plist del perfil teamadmin son accesibles desde **distintos caminos de navegación**.
+Por ejemplo, los jugadores se pueden ver desde:
+- La jerarquía de equipo: `Mis Clubes → Temporadas → Categorías → Equipos → {equipo} → Jugadores`
+- La jerarquía de usuarios: `Mis Clubes → Usuarios → {nombre apellido1} → Jugadores`
+
+En estos casos, el plist y la página deben soportar ambas rutas y mostrar el breadcrumb que
+corresponda a la ruta de entrada.
+
+### 13.1 Rutas en `app.routes.ts`
+
+Se definen dos (o más) rutas separadas para el mismo page component, cada una con un parámetro
+de filtro distinto:
+
+```typescript
+{ path: '<entidad>/teamadmin',                             component: EntidadTeamadminPlistPage, canActivate: [ClubAdminGuard] },
+{ path: '<entidad>/teamadmin/<filtroA>/:id_<filtroA>',     component: EntidadTeamadminPlistPage, canActivate: [ClubAdminGuard] },
+{ path: '<entidad>/teamadmin/<filtroB>/:id_<filtroB>',     component: EntidadTeamadminPlistPage, canActivate: [ClubAdminGuard] },
+```
+
+Las rutas extra **no requieren page components distintos**: el mismo page component lee qué
+parámetro está presente y lo pasa al componente de presentación.
+
+### 13.2 Page component (`.ts`)
+
+Declara un signal por cada parámetro de filtro posible e inicializa solo el que tenga valor:
+
+```typescript
+export class EntidadTeamadminPlistPage implements OnInit {
+  id_<filtroA> = signal<number | undefined>(undefined);
+  id_<filtroB> = signal<number | undefined>(undefined);
+
+  constructor(private route: ActivatedRoute) {}
+
+  ngOnInit(): void {
+    const paramA = this.route.snapshot.paramMap.get('id_<filtroA>');
+    if (paramA) this.id_<filtroA>.set(Number(paramA));
+
+    const paramB = this.route.snapshot.paramMap.get('id_<filtroB>');
+    if (paramB) this.id_<filtroB>.set(Number(paramB));
+  }
+}
+```
+
+### 13.3 Page template (`.html`)
+
+Pasa todos los inputs de filtro al componente:
+
+```html
+<div class="container my-2">
+  <app-<entidad>-teamadmin-plist
+    [id_<filtroA>]="id_<filtroA>()"
+    [id_<filtroB>]="id_<filtroB>()">
+  </app-<entidad>-teamadmin-plist>
+</div>
+```
+
+### 13.4 Componente teamadmin plist (`.ts`)
+
+Declara un `@Input()` por cada ruta de entrada, inyecta los servicios necesarios para obtener
+los datos del padre, y en `ngOnInit()` construye el breadcrumb condicionalmente:
+
+```typescript
+export class EntidadTeamadminPlist implements OnInit {
+  @Input() id_<filtroA>?: number;
+  @Input() id_<filtroB>?: number;
+
+  breadcrumbItems = signal<BreadcrumbItem[]>([
+    // Breadcrumb por defecto (sin filtro activo)
+    { label: 'Mis Clubes', route: '/club/teamadmin' },
+    { label: '<Entidades>' },
+  ]);
+
+  private o<FiltroA>Service = inject(<FiltroA>Service);
+  private o<FiltroB>Service = inject(<FiltroB>Service);
+
+  ngOnInit(): void {
+    if (this.id_<filtroA> && this.id_<filtroA> > 0) {
+      this.o<FiltroA>Service.get(this.id_<filtroA>).subscribe({
+        next: (entA) => {
+          this.breadcrumbItems.set([
+            { label: 'Mis Clubes', route: '/club/teamadmin' },
+            // ... ítems de la jerarquía de filtroA usando campos del objeto entA
+            { label: entA.campoDescriptivo, route: `/<filtroA>/teamadmin/view/${entA.id}` },
+            { label: '<Entidades>' },
+          ]);
+        },
+        error: () => {},
+      });
+    } else if (this.id_<filtroB> && this.id_<filtroB> > 0) {
+      this.o<FiltroB>Service.get(this.id_<filtroB>).subscribe({
+        next: (entB) => {
+          this.breadcrumbItems.set([
+            { label: 'Mis Clubes', route: '/club/teamadmin' },
+            // ... ítems de la jerarquía de filtroB
+            { label: `${entB.nombre} ${entB.apellido1}`, route: `/<filtroB>/teamadmin/view/${entB.id}` },
+            { label: '<Entidades>' },
+          ]);
+        },
+        error: () => {},
+      });
+    }
+    // Si ningún filtro está activo, queda el breadcrumb por defecto inicializado en el signal.
+  }
+}
+```
+
+**Reglas obligatorias:**
+- El `if` / `else if` evalúa **en el mismo orden de prioridad** que el servicio de datos.
+  El primer filtro activo gana; nunca se activan dos ramas simultáneamente.
+- El servicio de datos ya implementa la misma prioridad para el filtrado (primer filtro > 0 gana).
+- La llamada al servicio de la entidad padre se usa solo para obtener el nombre/descripción
+  para el breadcrumb. Los errores HTTP se silencian con `error: () => {}`.
+- El `@Input()` para el filtro debe declararse opcional (`?: number`) porque la ruta sin filtro
+  no lo pasará.
+
+### 13.5 Componente teamadmin plist (`.html`)
+
+Pasa todos los inputs de filtro al componente admin reutilizado:
+
+```html
+<div>
+  <app-breadcrumb [items]="breadcrumbItems()"></app-breadcrumb>
+  <app-<entidad>-admin-plist
+    [id_<filtroA>]="id_<filtroA>"
+    [id_<filtroB>]="id_<filtroB>"
+    [showFilterInfo]="false"
+    strRole="teamadmin">
+  </app-<entidad>-admin-plist>
+</div>
+```
+
+### 13.6 Breadcrumbs estándar por contexto de entrada
+
+Lista de los paths de navegación documentados y sus breadcrumbs:
+
+**Path equipo** (jerarquía completa descendente):
+- `Mis Clubes → Temporadas → {temporada.descripcion} → Categorías → {categoria.nombre} → Equipos → {equipo.nombre} → {Entidades}`
+- Cada ítem de la cadena lleva `route` a su vista teamadmin correspondiente.
+- Los segmentos genéricos intermedios (`Temporadas`, `Categorías`, `Equipos`) llevan rutas
+  filtradas por el padre: `/categoria/teamadmin/temporada/{id}`, `/equipo/teamadmin/categoria/{id}`.
+
+**Path usuario** (acceso desde la lista de usuarios del club):
+- `Mis Clubes → Usuarios → {usuario.nombre} {usuario.apellido1} → {Entidades}`
+- Ejemplo de implementación en `jugador/teamadmin/plist/plist.ts`.
+
+**Sin filtro** (acceso directo desde sidebar o URL directa):
+- `Mis Clubes → {Entidades}` (breadcrumb estático, no requiere llamada HTTP).
+
+### 13.7 Enlace de origen en el plist padre
+
+Cuando un plist lista registros que actúan como origen de la ruta dual, el contador en los
+badges de tarjeta debe enlazar usando el segmento correcto:
+
+- Desde un plist de **equipo**, el badge de jugadores enlaza a:
+  `['/jugador/teamadmin/equipo', oEntidad.id]`
+- Desde un plist de **usuario**, el badge de jugadores enlaza a:
+  `['/jugador/teamadmin/usuario', oUsuario.id]`
+
+Cada origen usa su segmento de ruta para que el componente receptor pueda determinar el
+breadcrumb contextual correcto.
+
+### 13.8 Entidades con rutas duales implementadas
+
+- **jugador**: rutas `equipo/:id_equipo` y `usuario/:id_usuario`.
+  Implementación de referencia en `component/jugador/teamadmin/plist/plist.ts`.
