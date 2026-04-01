@@ -3,23 +3,13 @@
 }
 
 @if (!error()) {
-<div class="container py-3">
+<div class="container p-4">
 
   <app-temporada-teamadmin-detail [id]="id_temporada"></app-temporada-teamadmin-detail>
 
-  <div class="alert alert-danger d-flex flex-column m-3" role="alert">
-    <div class="m-2">
-      <i class="bi bi-exclamation-triangle-fill"></i>
-      <strong> ¿Seguro que desea eliminar esta temporada?</strong> Esta acción no se puede deshacer.
-    </div>
-    <div class="d-flex justify-content-end gap-2 m-3">
-      <button class="btn btn-danger" (click)="doDelete()">
-        <i class="bi bi-trash me-2"></i>Eliminar
-      </button>
-      <button class="btn btn-secondary" (click)="doCancel()">
-        <i class="bi bi-x-lg me-2"></i>Cancelar
-      </button>
-    </div>
-  </div>
+  <app-confirmacion-borrado
+    (confirm)="doDelete()"
+    (cancel)="doCancel()"
+  ></app-confirmacion-borrado>
 </div>
 }

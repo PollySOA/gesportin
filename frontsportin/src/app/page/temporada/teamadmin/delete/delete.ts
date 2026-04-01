@@ -4,10 +4,11 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { TemporadaService } from '../../../../service/temporada';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { TemporadaTeamadminDetail } from '../../../../component/temporada/teamadmin/detail/detail';
+import { ConfirmacionBorradoComponent } from '../../../../component/shared/confirmacion-borrado/confirmacion-borrado.component';
 
 @Component({
   selector: 'app-temporada-teamadmin-delete-page',
-  imports: [TemporadaTeamadminDetail],
+  imports: [TemporadaTeamadminDetail, ConfirmacionBorradoComponent],
   templateUrl: './delete.html',
 })
 export class TemporadaTeamadminDeletePage implements OnInit {
