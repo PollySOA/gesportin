@@ -100,6 +100,19 @@
             </div>
             <div class="col-6 col-md-4 col-lg-3">
               <div class="border rounded p-2 text-center bg-light">
+                <div class="text-muted small text-uppercase">Valoración media</div>
+                <div class="fw-bold fs-5">
+                  @if ((oArticulo()?.mediaPuntuacion ?? 0) > 0) {
+                    <span class="text-warning">★</span> {{ oArticulo()?.mediaPuntuacion | number:'1.1-1' }}
+                    <span class="text-muted fs-6">/ 5</span>
+                  } @else {
+                    <span class="text-muted fs-6">Sin valoraciones</span>
+                  }
+                </div>
+              </div>
+            </div>
+            <div class="col-6 col-md-4 col-lg-3">
+              <div class="border rounded p-2 text-center bg-light">
                 <div class="text-muted small text-uppercase">Compras</div>
                 <div class="fw-bold fs-5">
                   @if ((oArticulo()?.compras ?? 0) > 0) {

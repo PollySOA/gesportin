@@ -122,6 +122,12 @@
                       </th>
                       <th scope="col" class="d-none d-md-table-cell" style="width: 10%">
                         <div class="header-stacked">
+                          <div class="header-top"><i class="bi bi-star-fill text-warning" aria-hidden="true"></i></div>
+                          <span>Valoración</span>
+                        </div>
+                      </th>
+                      <th scope="col" class="d-none d-md-table-cell" style="width: 10%">
+                        <div class="header-stacked">
                           <div class="header-top"><i class="bi bi-bag" aria-hidden="true"></i></div>
                           <span>Compras</span>
                         </div>
@@ -164,6 +170,13 @@
                             } @else {
                               <a [routerLink]="strRole ? ['/comentarioart', strRole, 'articulo', oArticulo.id] : ['/comentarioart/articulo', oArticulo.id]">{{ oArticulo.comentarioarts }}</a>
                             }
+                          }
+                        </td>
+                        <td class="text-center d-none d-md-table-cell">
+                          @if (oArticulo.mediaPuntuacion > 0) {
+                            <span class="text-warning">★</span> {{ oArticulo.mediaPuntuacion | number:'1.1-1' }}
+                          } @else {
+                            <i class="bi bi-dash" aria-hidden="true"></i>
                           }
                         </td>
                         <td class="text-center d-none d-md-table-cell">

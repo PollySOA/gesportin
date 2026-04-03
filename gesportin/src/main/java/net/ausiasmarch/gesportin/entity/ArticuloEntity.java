@@ -54,6 +54,10 @@ public class ArticuloEntity {
 
     @Getter(AccessLevel.NONE)
     @OneToMany(mappedBy = "articulo", fetch = FetchType.LAZY)
+    private java.util.List<PuntuacionartEntity> puntuacionarts;
+
+    @Getter(AccessLevel.NONE)
+    @OneToMany(mappedBy = "articulo", fetch = FetchType.LAZY)
     private java.util.List<CompraEntity> compras;
 
     @Getter(AccessLevel.NONE)
@@ -62,6 +66,18 @@ public class ArticuloEntity {
 
     public int getComentarioarts() {
         return comentarioarts != null ? comentarioarts.size() : 0;
+    }
+
+    public int getPuntuacionarts() {
+        return puntuacionarts != null ? puntuacionarts.size() : 0;
+    }
+
+    public double getMediaPuntuacion() {
+        if (puntuacionarts == null || puntuacionarts.isEmpty()) return 0.0;
+        return puntuacionarts.stream()
+                .mapToInt(PuntuacionartEntity::getPuntuacion)
+                .average()
+                .orElse(0.0);
     }
 
     public int getCompras() {

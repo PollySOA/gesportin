@@ -4,9 +4,13 @@ import { FormsModule } from '@angular/forms';
 import { IArticulo } from '../../../../model/articulo';
 import { ITipoarticulo } from '../../../../model/tipoarticulo';
 import { ICarrito } from '../../../../model/carrito';
+import { IComentarioart } from '../../../../model/comentarioart';
+import { IPuntuacionart } from '../../../../model/puntuacionart';
 import { ArticuloService } from '../../../../service/articulo';
 import { TipoarticuloService } from '../../../../service/tipoarticulo';
 import { CarritoService } from '../../../../service/carrito';
+import { ComentarioartService } from '../../../../service/comentarioart';
+import { PuntuacionartService } from '../../../../service/puntuacionart';
 import { SessionService } from '../../../../service/session';
 import { forkJoin, of } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
@@ -27,6 +31,8 @@ export class CarritoUsuarioTienda implements OnInit {
   private articuloService = inject(ArticuloService);
   private tipoarticuloService = inject(TipoarticuloService);
   private carritoService = inject(CarritoService);
+  private comentarioartService = inject(ComentarioartService);
+  private puntuacionartService = inject(PuntuacionartService);
   private session = inject(SessionService);
 
   grupos = signal<TiendaGroup[]>([]);
@@ -37,6 +43,17 @@ export class CarritoUsuarioTienda implements OnInit {
   message = signal<string | null>(null);
   messageType = signal<'success' | 'danger' | 'info'>('info');
   cantidades = signal<Record<number, number>>({});
+
+  // Comentarios y puntuaciones
+  expandedArticuloId = signal<number | null>(null);
+  comentariosByArticulo = signal<Record<number, IComentarioart[]>>({});
+  loadingComentarios = signal<Record<number, boolean>>({});
+  miPuntuacion = signal<Record<number, IPuntuacionart | null>>({});
+  loadingPuntuacion = signal<Record<number, boolean>>({});
+  hoverStar = signal<Record<number, number>>({});
+  nuevoComentario = signal<Record<number, string>>({});
+  editingComentario = signal<{ id: number; contenido: string } | null>(null);
+  savingComentario = signal(false);
 
   ngOnInit(): void {
     const clubId = this.session.getClubId() ?? 0;
@@ -168,9 +185,192 @@ export class CarritoUsuarioTienda implements OnInit {
     return this.carrito().reduce((acc, c) => acc + c.cantidad, 0);
   }
 
+  // ============================================================
+  // COMENTARIOS Y PUNTUACIONES
+  // ============================================================
+
+  toggleComentarios(articuloId: number): void {
+    if (this.expandedArticuloId() === articuloId) {
+      this.expandedArticuloId.set(null);
+    } else {
+      this.expandedArticuloId.set(articuloId);
+      if (!this.comentariosByArticulo()[articuloId]) {
+        this.loadComentarios(articuloId);
+      }
+      if (this.miPuntuacion()[articuloId] === undefined) {
+        this.loadMiPuntuacion(articuloId);
+      }
+    }
+  }
+
+  loadComentarios(articuloId: number): void {
+    this.loadingComentarios.set({ ...this.loadingComentarios(), [articuloId]: true });
+    this.comentarioartService.getPage(0, 1000, 'id', 'asc', '', articuloId).subscribe({
+      next: (page) => {
+        this.comentariosByArticulo.set({ ...this.comentariosByArticulo(), [articuloId]: page.content });
+        this.loadingComentarios.set({ ...this.loadingComentarios(), [articuloId]: false });
+      },
+      error: () => this.loadingComentarios.set({ ...this.loadingComentarios(), [articuloId]: false }),
+    });
+  }
+
+  loadMiPuntuacion(articuloId: number): void {
+    const uid = this.session.getUserId();
+    if (!uid) return;
+    this.loadingPuntuacion.set({ ...this.loadingPuntuacion(), [articuloId]: true });
+    this.puntuacionartService.getPage(0, 1000, 'id', 'asc', articuloId, uid).subscribe({
+      next: (page) => {
+        const mia = page.content.find((p) => p.usuario?.id === uid) ?? null;
+        this.miPuntuacion.set({ ...this.miPuntuacion(), [articuloId]: mia });
+        this.loadingPuntuacion.set({ ...this.loadingPuntuacion(), [articuloId]: false });
+      },
+      error: () => {
+        this.miPuntuacion.set({ ...this.miPuntuacion(), [articuloId]: null });
+        this.loadingPuntuacion.set({ ...this.loadingPuntuacion(), [articuloId]: false });
+      },
+    });
+  }
+
+  getComentarios(articuloId: number): IComentarioart[] {
+    return this.comentariosByArticulo()[articuloId] ?? [];
+  }
+
+  getMiPuntuacion(articuloId: number): number {
+    return this.miPuntuacion()[articuloId]?.puntuacion ?? 0;
+  }
+
+  setHoverStar(articuloId: number, star: number): void {
+    this.hoverStar.set({ ...this.hoverStar(), [articuloId]: star });
+  }
+
+  clearHoverStar(articuloId: number): void {
+    this.hoverStar.set({ ...this.hoverStar(), [articuloId]: 0 });
+  }
+
+  getStarDisplay(articuloId: number, star: number): 'filled' | 'empty' {
+    const hover = this.hoverStar()[articuloId] ?? 0;
+    const actual = this.getMiPuntuacion(articuloId);
+    return star <= (hover || actual) ? 'filled' : 'empty';
+  }
+
+  ratearArticulo(articuloId: number, puntuacion: number): void {
+    const uid = this.session.getUserId();
+    if (!uid) return;
+    const existing = this.miPuntuacion()[articuloId];
+    if (existing) {
+      this.puntuacionartService
+        .update({ id: existing.id, puntuacion, articulo: { id: articuloId } as any, usuario: { id: uid } as any })
+        .subscribe({
+          next: (updated) => {
+            this.miPuntuacion.set({ ...this.miPuntuacion(), [articuloId]: updated });
+            this.showMessage('Puntuación actualizada', 'success');
+          },
+          error: () => this.showMessage('Error al actualizar la puntuación', 'danger'),
+        });
+    } else {
+      this.puntuacionartService
+        .create({ puntuacion, articulo: { id: articuloId } as any, usuario: { id: uid } as any })
+        .subscribe({
+          next: (created) => {
+            this.miPuntuacion.set({ ...this.miPuntuacion(), [articuloId]: created });
+            this.showMessage('¡Puntuación guardada!', 'success');
+          },
+          error: () => this.showMessage('Error al guardar la puntuación', 'danger'),
+        });
+    }
+  }
+
+  borrarPuntuacion(articuloId: number): void {
+    const existing = this.miPuntuacion()[articuloId];
+    if (!existing) return;
+    this.puntuacionartService.delete(existing.id).subscribe({
+      next: () => {
+        const updated = { ...this.miPuntuacion() };
+        updated[articuloId] = null;
+        this.miPuntuacion.set(updated);
+        this.showMessage('Puntuación eliminada', 'info');
+      },
+      error: () => this.showMessage('Error al eliminar la puntuación', 'danger'),
+    });
+  }
+
+  getNuevoComentario(articuloId: number): string {
+    return this.nuevoComentario()[articuloId] ?? '';
+  }
+
+  setNuevoComentario(articuloId: number, val: string): void {
+    this.nuevoComentario.set({ ...this.nuevoComentario(), [articuloId]: val });
+  }
+
+  enviarComentario(articuloId: number): void {
+    const uid = this.session.getUserId();
+    const texto = this.getNuevoComentario(articuloId).trim();
+    if (!uid || !texto) return;
+    this.savingComentario.set(true);
+    this.comentarioartService
+      .create({ contenido: texto, articulo: { id: articuloId } as any, usuario: { id: uid } as any })
+      .subscribe({
+        next: () => {
+          this.savingComentario.set(false);
+          this.setNuevoComentario(articuloId, '');
+          this.loadComentarios(articuloId);
+          this.showMessage('Comentario añadido', 'success');
+        },
+        error: () => {
+          this.savingComentario.set(false);
+          this.showMessage('Error al añadir comentario', 'danger');
+        },
+      });
+  }
+
+  startEditComentario(comentario: IComentarioart): void {
+    this.editingComentario.set({ id: comentario.id, contenido: comentario.contenido });
+  }
+
+  cancelEditComentario(): void {
+    this.editingComentario.set(null);
+  }
+
+  guardarEditComentario(articuloId: number): void {
+    const editing = this.editingComentario();
+    if (!editing) return;
+    const uid = this.session.getUserId();
+    this.savingComentario.set(true);
+    this.comentarioartService
+      .update({ id: editing.id, contenido: editing.contenido, articulo: { id: articuloId } as any, usuario: { id: uid } as any })
+      .subscribe({
+        next: () => {
+          this.savingComentario.set(false);
+          this.editingComentario.set(null);
+          this.loadComentarios(articuloId);
+          this.showMessage('Comentario actualizado', 'success');
+        },
+        error: () => {
+          this.savingComentario.set(false);
+          this.showMessage('Error al actualizar comentario', 'danger');
+        },
+      });
+  }
+
+  eliminarComentario(comentarioId: number, articuloId: number): void {
+    this.comentarioartService.delete(comentarioId).subscribe({
+      next: () => {
+        this.loadComentarios(articuloId);
+        this.showMessage('Comentario eliminado', 'info');
+      },
+      error: () => this.showMessage('Error al eliminar comentario', 'danger'),
+    });
+  }
+
+  esMioComentario(comentario: IComentarioart): boolean {
+    return comentario.usuario?.id === this.session.getUserId();
+  }
+
   private showMessage(msg: string, type: 'success' | 'danger' | 'info' = 'info'): void {
     this.message.set(msg);
     this.messageType.set(type);
     setTimeout(() => this.message.set(null), 5000);
   }
 }
+
+

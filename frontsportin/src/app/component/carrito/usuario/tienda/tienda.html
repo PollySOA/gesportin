@@ -21,7 +21,9 @@
           </div>
           <div class="td-articles">
             @for (a of grupo.articulos; track a.id) {
-              <div class="td-article-card">
+              <div class="td-article-card" [class.td-article-card--expanded]="expandedArticuloId() === a.id">
+
+                <!-- Imagen -->
                 @if (a.imagen) {
                   <div class="td-article-img">
                     <img [src]="'data:image/jpeg;base64,' + a.imagen" [alt]="a.descripcion" />
@@ -31,6 +33,8 @@
                     <i class="bi bi-box"></i>
                   </div>
                 }
+
+                <!-- Info + Precio -->
                 <div class="td-article-info">
                   <h5>{{ a.descripcion }}</h5>
                   <div class="td-article-price">
@@ -43,6 +47,8 @@
                     }
                   </div>
                 </div>
+
+                <!-- Acciones de compra -->
                 <div class="td-article-actions">
                   <div class="td-qty-control">
                     <button class="td-qty-btn" (click)="setCantidad(a.id, getCantidad(a.id) - 1)">−</button>
@@ -59,6 +65,149 @@
                     <i class="bi bi-cart-plus me-1"></i>Añadir
                   </button>
                 </div>
+
+                <!-- Toggle Comentarios/Valoración -->
+                <div class="td-article-footer">
+                  <button
+                    class="td-toggle-btn"
+                    [class.td-toggle-btn--active]="expandedArticuloId() === a.id"
+                    (click)="toggleComentarios(a.id)"
+                  >
+                    <i class="bi" [class.bi-chat-square-dots-fill]="expandedArticuloId() === a.id" [class.bi-chat-square-dots]="expandedArticuloId() !== a.id"></i>
+                    Valorar y comentar
+                    <i class="bi" [class.bi-chevron-up]="expandedArticuloId() === a.id" [class.bi-chevron-down]="expandedArticuloId() !== a.id"></i>
+                  </button>
+                </div>
+
+                <!-- Panel expandible: Puntuación + Comentarios -->
+                @if (expandedArticuloId() === a.id) {
+                  <div class="td-expand-panel">
+
+                    <!-- Estrellas -->
+                    <div class="td-rating-section">
+                      <span class="td-rating-label">Tu valoración:</span>
+                      <div class="td-stars" (mouseleave)="clearHoverStar(a.id)">
+                        @for (star of [1, 2, 3, 4, 5]; track star) {
+                          <button
+                            class="td-star"
+                            [class.td-star--filled]="getStarDisplay(a.id, star) === 'filled'"
+                            (mouseenter)="setHoverStar(a.id, star)"
+                            (click)="ratearArticulo(a.id, star)"
+                            [attr.aria-label]="star + ' estrella' + (star > 1 ? 's' : '')"
+                          >
+                            <i class="bi" [class.bi-star-fill]="getStarDisplay(a.id, star) === 'filled'" [class.bi-star]="getStarDisplay(a.id, star) === 'empty'"></i>
+                          </button>
+                        }
+                      </div>
+                      @if (loadingPuntuacion()[a.id]) {
+                        <span class="td-rating-hint"><span class="spinner-border spinner-border-sm" role="status"></span></span>
+                      } @else if (getMiPuntuacion(a.id) > 0) {
+                        <span class="td-rating-hint">
+                          Tu nota: <strong>{{ getMiPuntuacion(a.id) }}/5</strong>
+                          <button class="td-del-rating-btn" (click)="borrarPuntuacion(a.id)" title="Eliminar valoración">
+                            <i class="bi bi-x-circle"></i>
+                          </button>
+                        </span>
+                      } @else {
+                        <span class="td-rating-hint">Haz clic para valorar</span>
+                      }
+                    </div>
+
+                    <!-- Comentarios -->
+                    <div class="td-comments-section">
+                      <div class="td-comments-title">
+                        <i class="bi bi-chat-left-text me-1"></i>Comentarios
+                        @if (loadingComentarios()[a.id]) {
+                          <span class="spinner-border spinner-border-sm ms-2" role="status"></span>
+                        } @else {
+                          <span class="td-comments-count">{{ getComentarios(a.id).length }}</span>
+                        }
+                      </div>
+
+                      <!-- Lista de comentarios -->
+                      @if (getComentarios(a.id).length > 0) {
+                        <div class="td-comments-list">
+                          @for (c of getComentarios(a.id); track c.id) {
+                            <div class="td-comment" [class.td-comment--mine]="esMioComentario(c)">
+                              @if (editingComentario()?.id === c.id) {
+                                <div class="td-comment-edit">
+                                  <textarea
+                                    class="form-control form-control-sm td-comment-textarea"
+                                    [(ngModel)]="editingComentario()!.contenido"
+                                    rows="2"
+                                    maxlength="1024"
+                                  ></textarea>
+                                  <div class="td-comment-edit-btns">
+                                    <button
+                                      class="btn btn-success btn-sm"
+                                      (click)="guardarEditComentario(a.id)"
+                                      [disabled]="savingComentario() || !editingComentario()!.contenido.trim()"
+                                    >
+                                      @if (savingComentario()) {
+                                        <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                                      }
+                                      Guardar
+                                    </button>
+                                    <button class="btn btn-outline-secondary btn-sm" (click)="cancelEditComentario()">Cancelar</button>
+                                  </div>
+                                </div>
+                              } @else {
+                                <div class="td-comment-header">
+                                  <span class="td-comment-author">
+                                    <i class="bi bi-person-circle me-1"></i>
+                                    {{ c.usuario?.nombre ?? 'Usuario' }}
+                                    @if (esMioComentario(c)) {
+                                      <span class="td-comment-mine-badge">Tú</span>
+                                    }
+                                  </span>
+                                  @if (esMioComentario(c)) {
+                                    <div class="td-comment-actions">
+                                      <button class="td-icon-btn" title="Editar" (click)="startEditComentario(c)">
+                                        <i class="bi bi-pencil"></i>
+                                      </button>
+                                      <button class="td-icon-btn td-icon-btn--danger" title="Eliminar" (click)="eliminarComentario(c.id, a.id)">
+                                        <i class="bi bi-trash3"></i>
+                                      </button>
+                                    </div>
+                                  }
+                                </div>
+                                <p class="td-comment-body">{{ c.contenido }}</p>
+                              }
+                            </div>
+                          }
+                        </div>
+                      } @else if (!loadingComentarios()[a.id]) {
+                        <p class="td-no-comments">Sé el primero en comentar este artículo.</p>
+                      }
+
+                      <!-- Nuevo comentario -->
+                      <div class="td-new-comment">
+                        <textarea
+                          class="form-control form-control-sm td-comment-textarea"
+                          [value]="getNuevoComentario(a.id)"
+                          (input)="setNuevoComentario(a.id, $any($event.target).value)"
+                          placeholder="Escribe tu comentario…"
+                          rows="2"
+                          maxlength="1024"
+                        ></textarea>
+                        <button
+                          class="btn btn-primary btn-sm td-send-btn"
+                          (click)="enviarComentario(a.id)"
+                          [disabled]="savingComentario() || !getNuevoComentario(a.id).trim()"
+                        >
+                          @if (savingComentario()) {
+                            <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                          } @else {
+                            <i class="bi bi-send me-1"></i>
+                          }
+                          Publicar
+                        </button>
+                      </div>
+                    </div>
+
+                  </div>
+                }
+
               </div>
             }
           </div>
@@ -118,3 +267,4 @@
   </aside>
 
 </div>
+

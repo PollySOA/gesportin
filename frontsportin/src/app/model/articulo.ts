@@ -10,6 +10,8 @@ export interface IArticulo {
   comentarioarts: number
   compras: number
   carritos: number
+  puntuacionarts: number
+  mediaPuntuacion: number
 }
 
 
