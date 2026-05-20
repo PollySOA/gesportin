@@ -29,6 +29,13 @@ export class SecurityService {
   }
 
   /**
+   * Helper para exponer session.isAdmin sin acceder directamente a session.
+   */
+  isAdmin(): boolean {
+    return this.session.isAdmin();
+  }
+
+  /**
    * Expose club id for callers.
    */
   getClubId(): number | null {

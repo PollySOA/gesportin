@@ -207,6 +207,9 @@ import { FacturaUsuarioPlistPage } from './page/factura/usuario/plist/plist';
 import { JugadorUsuarioEquipoPlistPage } from './page/jugador/usuario/equipo-plist/plist';
 import { AdminDataToolsPage } from './page/admin/data-tools/data-tools';
 import { UsuarioPerfilPage } from './page/usuario/perfil/perfil';
+import { AdminDashboardPage } from './page/admin/dashboard/dashboard';
+import { ClubAdminDashboardPage } from './page/usuario/teamadmin/dashboard/dashboard';
+import { UsuarioDashboardPage } from './page/usuario/mi-home/dashboard/dashboard';
 
 export const publicRoutes: Routes = [
   { path: '', component: LandingPage },
@@ -215,6 +218,7 @@ export const publicRoutes: Routes = [
 ];
 
 const protectedRoutes: Routes = [
+  { path: 'admin/dashboard', component: AdminDashboardPage, canActivate: [AdminGuard] },
   { path: 'admin/datos', component: AdminDataToolsPage },
   { path: 'usuario', component: UsuarioAdminPlistPage },
   { path: 'usuario/tipousuario/:id_tipousuario', component: UsuarioAdminPlistPage },
@@ -506,6 +510,9 @@ export const routes: Routes = [
   { path: 'factura/teamadmin/view/:id', component: FacturaTeamadminViewPage, canActivate: [ClubAdminGuard] },
   { path: 'factura/teamadmin/new', component: FacturaTeamadminNewPage, canActivate: [ClubAdminGuard] },
   { path: 'factura/teamadmin/edit/:id', component: FacturaTeamadminEditPage, canActivate: [ClubAdminGuard] },
+  // Dashboard per perfil
+  { path: 'mi/dashboard', component: UsuarioDashboardPage, canActivate: [UsuarioGuard] },
+  { path: 'dashboard/teamadmin', component: ClubAdminDashboardPage, canActivate: [ClubAdminGuard] },
   // Perfil propio (todos los usuarios autenticados)
   { path: 'mi/perfil', component: UsuarioPerfilPage, canActivate: [AuthGuard] },
   // Usuario (perfil 3) routes
