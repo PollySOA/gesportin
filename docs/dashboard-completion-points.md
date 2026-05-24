@@ -7,57 +7,53 @@ Estado: COMPLETADO - LISTO PARA PRODUCCION
 
 ## Resumen Ejecutivo
 
-1. Error de tipado Chart.js corregido
-- Problema: `weight: 600` (invalido)
-- Solucion: `weight: 'bold'`
-
-2. Metricas implementadas
+1. Metricas implementadas
 - Para todos: Clubes, Equipos, Jugadores, Partidos, Pagos, Comentarios, Puntuaciones
 - Solo admin: Noticias, Articulos, Cuotas, Facturas, Compras
 
-3. Refactor a `inject()`
+2. Refactor a `inject()`
 - DashboardComponent modernizado con `inject()`
 - Mejor mantenibilidad y testabilidad
 
-4. DashboardService creado
+3. DashboardService creado
 - Ubicacion: `/frontsportin/src/app/service/dashboard/dashboard.service.ts`
 - `fetchDashboardData()` con `forkJoin`
 - Manejo de errores con `catchError`
 - Filtrado por perfil de usuario
 
-5. Modelo tipado
+4. Modelo tipado
 - `DashboardRawData`
 - `DashboardViewModel`
 - `DashboardKpiCard`
 - `QuickAccessCard`
 
-6. Tooltips y leyendas mejorados
+5. Tooltips y leyendas mejorados
 - Tamaños de fuente aumentados para mejor legibilidad
 - Hover mas claro en graficas
 
-7. Rutas por perfil
+6. Rutas por perfil
 - `/admin/dashboard` con `AdminGuard`
 - `/dashboard/teamadmin` con `ClubAdminGuard`
 - `/mi/dashboard` con `UsuarioGuard`
 
-8. Wrapper pages creadas
+7. Wrapper pages creadas
 - `AdminDashboardPage`
 - `ClubAdminDashboardPage`
 - `UsuarioDashboardPage`
 
-9. Seguridad aplicada
+8. Seguridad aplicada
 - Filtrado de datos sensibles por perfil
 - Sin acceso no autorizado a metricas administrativas
 
-10. Validacion
+9. Validacion
 - Compilacion TypeScript sin errores en archivos del dashboard
 
-11. Restricciones respetadas
+10. Restricciones respetadas
 - No se modifico backend
 - No se tocaron archivos compartidos de entorno
 - Se mantuvo arquitectura del proyecto
 
-12. Documentacion
+11. Documentacion
 - Checklist de cumplimiento
 - Workflow completo del trabajo
 
