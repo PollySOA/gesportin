@@ -5,47 +5,82 @@
         <i class="bi bi-person-circle"></i>
       </div>
       <div class="ud-welcome">
-        <h1>Mi Dashboard, <span class="ud-username">{{ userName() }}</span></h1>
-        <p>Área personal de tu club</p>
+        <h1>Mi Dashboard de <span class="ud-username">{{ userName() }}</span></h1>
+        <p>Resumen personal de tu actividad, pagos y seguimiento deportivo</p>
       </div>
     </div>
   </header>
 
-  <section class="ud-kpis" aria-label="Indicadores personales">
-    <article class="ud-kpi">
-      <span class="ud-kpi-label">Mi carrito</span>
-      <span class="ud-kpi-value">{{ carritoCount() }}</span>
-    </article>
-    <article class="ud-kpi">
-      <span class="ud-kpi-label">Mis facturas</span>
-      <span class="ud-kpi-value">{{ facturasCount() }}</span>
-    </article>
-    <article class="ud-kpi">
+  <section class="ud-kpis" aria-label="Indicadores personales principales">
+    <article class="ud-kpi ud-kpi--blue">
       <span class="ud-kpi-label">Mis equipos</span>
       <span class="ud-kpi-value">{{ equiposCount() }}</span>
     </article>
+    <article class="ud-kpi ud-kpi--green">
+      <span class="ud-kpi-label">Facturas registradas</span>
+      <span class="ud-kpi-value">{{ facturasCount() }}</span>
+    </article>
+    <article class="ud-kpi ud-kpi--red">
+      <span class="ud-kpi-label">Carrito pendiente</span>
+      <span class="ud-kpi-value">{{ carritoCount() }}</span>
+    </article>
+    <article class="ud-kpi ud-kpi--cyan">
+      <span class="ud-kpi-label">Actividad total</span>
+      <span class="ud-kpi-value">{{ totalActivity() }}</span>
+    </article>
   </section>
 
-  <section class="ud-charts" aria-label="Gráficas personales">
+  @if (!loading()) {
+  <section class="ud-empty-state ud-summary-strip" aria-label="Resumen y siguiente accion">
+    <div class="ud-summary-copy">
+      <i class="bi bi-lightning-charge"></i>
+      <p>{{ activitySummary() }}</p>
+    </div>
+    <a [routerLink]="[recommendedAction().route]" class="btn btn-sm btn-outline-primary ud-summary-cta"
+      [attr.aria-label]="recommendedAction().detail">
+      {{ recommendedAction().title }}
+    </a>
+  </section>
+  }
+
+  @if (!loading() && !hasRecentActivity()) {
+  <section class="ud-empty-state" aria-label="Estado de actividad">
+    <i class="bi bi-info-circle"></i>
+    <p>Sin actividad reciente en carrito, facturas o equipos. Usa los accesos rápidos para empezar.</p>
+  </section>
+  }
+
+  <section class="ud-main-grid" aria-label="Estado y accesos rápidos">
     <article class="ud-chart-card ud-chart-wide">
       <header>
-        <h2>Actividad Personal</h2>
-        <i class="bi bi-bar-chart"></i>
+        <h2>Estado de mi actividad</h2>
+        <i class="bi bi-pie-chart"></i>
       </header>
       <div class="ud-chart-container">
-        <canvas baseChart [data]="activityBarChartData()" [options]="activityBarOptions" [type]="'bar'">
+        <canvas baseChart [data]="activityDoughnutChartData()" [options]="activityDoughnutOptions" [type]="'doughnut'">
         </canvas>
       </div>
+      <div class="ud-status-row" aria-label="Estado de progreso personal">
+        <span class="ud-status-chip ud-status-chip--ok">Completada: {{ completedActivityCount() }}</span>
+        <span class="ud-status-chip ud-status-chip--pending">Pendiente: {{ pendingActivityCount() }}</span>
+      </div>
+      <p class="ud-progress-note">Has completado el {{ completionRate() }}% de tu actividad registrada.</p>
     </article>
 
     <article class="ud-chart-card">
       <header>
-        <h2>Distribución de Mi Actividad</h2>
-        <i class="bi bi-pie-chart"></i>
+        <h2>Accesos rápidos</h2>
+        <i class="bi bi-lightning-charge"></i>
       </header>
-      <div class="ud-chart-container ud-chart-compact">
-        <canvas baseChart [data]="activityDoughnutChartData()" [options]="activityDoughnutOptions" [type]="'doughnut'">
-        </canvas>
+      <div class="ud-quick-panel">
+        <a [routerLink]="['/mi/equipos']" class="ud-quick-link"><i class="bi bi-trophy"></i> Ver mis equipos <span
+            class="ud-quick-count">{{ equiposCount() }}</span></a>
+        <a [routerLink]="['/mi/cuotas']" class="ud-quick-link"><i class="bi bi-cash-coin"></i> Gestionar mis cuotas
+          <span class="ud-quick-count">{{ completionRate() }}%</span></a>
+        <a [routerLink]="['/mi/noticias']" class="ud-quick-link"><i class="bi bi-newspaper"></i> Leer noticias del
+          club</a>
+        <a [routerLink]="['/mi/facturas']" class="ud-quick-link"><i class="bi bi-receipt"></i> Consultar mis facturas
+          <span class="ud-quick-count">{{ facturasCount() }}</span></a>
       </div>
     </article>
   </section>
@@ -111,7 +146,7 @@
         @if (carritoCount() > 0) {
         <p>Tienes <strong>{{ carritoCount() }}</strong> artículo{{ carritoCount() > 1 ? 's' : '' }} en el carrito</p>
         } @else {
-        <p>Productos oficiales de tu club, organizado por categorías</p>
+        <p>Productos oficiales de tu club, organizados por categorías</p>
         }
       </div>
       <div class="ud-card-arrow">
@@ -130,7 +165,7 @@
       <div class="ud-card-body">
         <h3>Mis Facturas</h3>
         @if (facturasCount() > 0) {
-        <p>Tienes <strong>{{ facturasCount() }}</strong> factura{{ facturasCount() > 1 ? 's' : '' }} de compras</p>
+        <p>Tienes <strong>{{ facturasCount() }}</strong> factura{{ facturasCount() > 1 ? 's' : '' }} de compra</p>
         } @else {
         <p>Historial completo de tus compras en la tienda</p>
         }

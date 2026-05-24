@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { BaseChartDirective } from 'ng2-charts';
@@ -25,26 +25,64 @@ export class UserDashboardComponent implements OnInit {
   facturasCount = signal(0);
   equiposCount = signal(0);
   loading = signal(true);
-  activityBarChartData = signal<ChartData<'bar'>>({
-    labels: ['Mi carrito', 'Mis facturas', 'Mis equipos'],
-    datasets: [{ data: [0, 0, 0], label: 'Actividad personal', backgroundColor: ['#cb4335', '#7d3c98', '#1e8449'] }]
+  readonly hasRecentActivitySignal = computed(() => this.carritoCount() > 0 || this.facturasCount() > 0 || this.equiposCount() > 0);
+  readonly totalActivity = computed(() => this.carritoCount() + this.facturasCount() + this.equiposCount());
+  readonly completedActivityCount = computed(() => this.facturasCount() + this.equiposCount());
+  readonly pendingActivityCount = computed(() => this.carritoCount());
+  readonly completionRate = computed(() => {
+    const total = this.totalActivity();
+    if (total <= 0) {
+      return 0;
+    }
+    return Math.round((this.completedActivityCount() / total) * 100);
+  });
+  readonly activitySummary = computed(() => {
+    if (!this.hasRecentActivitySignal()) {
+      return 'Aun no hay actividad personal registrada.';
+    }
+
+    const total = this.totalActivity();
+    return `Tienes ${total} elemento${total !== 1 ? 's' : ''} de actividad acumulada entre carrito, facturas y equipos.`;
+  });
+  readonly recommendedAction = computed(() => {
+    const carrito = this.carritoCount();
+    const facturas = this.facturasCount();
+    const equipos = this.equiposCount();
+
+    if (carrito > 0) {
+      return {
+        route: '/mi/tienda',
+        title: 'Finaliza tu compra',
+        detail: `Tienes ${carrito} articulo${carrito !== 1 ? 's' : ''} pendiente${carrito !== 1 ? 's' : ''} en el carrito.`
+      };
+    }
+
+    if (facturas > 0) {
+      return {
+        route: '/mi/facturas',
+        title: 'Revisa tus facturas',
+        detail: `Dispones de ${facturas} factura${facturas !== 1 ? 's' : ''} para consultar.`
+      };
+    }
+
+    if (equipos > 0) {
+      return {
+        route: '/mi/equipos',
+        title: 'Consulta tus equipos',
+        detail: `Participas en ${equipos} equipo${equipos !== 1 ? 's' : ''}.`
+      };
+    }
+
+    return {
+      route: '/mi/noticias',
+      title: 'Empieza por noticias',
+      detail: 'Mantente al dia con la actividad y avisos de tu club.'
+    };
   });
   activityDoughnutChartData = signal<ChartData<'doughnut'>>({
-    labels: ['Mi carrito', 'Mis facturas', 'Mis equipos'],
-    datasets: [{ data: [0, 0, 0], backgroundColor: ['#cb4335', '#7d3c98', '#1e8449'] }]
+    labels: ['Completada', 'Pendiente'],
+    datasets: [{ data: [0, 0], backgroundColor: ['#198754', '#c92a3d'] }]
   });
-
-  readonly activityBarOptions: ChartOptions<'bar'> = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: { legend: { display: false } },
-    scales: {
-      y: {
-        beginAtZero: true,
-        ticks: { precision: 0 }
-      }
-    }
-  };
 
   readonly activityDoughnutOptions: ChartOptions<'doughnut'> = {
     responsive: true,
@@ -109,28 +147,20 @@ export class UserDashboardComponent implements OnInit {
     });
   }
 
-  private updateCharts(carritoTotal: number, facturasTotal: number, equiposTotal: number): void {
-    const values = [carritoTotal, facturasTotal, equiposTotal];
+  hasRecentActivity(): boolean {
+    return this.hasRecentActivitySignal();
+  }
 
-    this.activityBarChartData.set({
-      labels: ['Mi carrito', 'Mis facturas', 'Mis equipos'],
-      datasets: [
-        {
-          label: 'Actividad personal',
-          data: values,
-          backgroundColor: ['#cb4335', '#7d3c98', '#1e8449'],
-          borderRadius: 10,
-          maxBarThickness: 56
-        }
-      ]
-    });
+  private updateCharts(carritoTotal: number, facturasTotal: number, equiposTotal: number): void {
+    const completed = facturasTotal + equiposTotal;
+    const pending = carritoTotal;
 
     this.activityDoughnutChartData.set({
-      labels: ['Mi carrito', 'Mis facturas', 'Mis equipos'],
+      labels: ['Completada', 'Pendiente'],
       datasets: [
         {
-          data: values,
-          backgroundColor: ['#cb4335', '#7d3c98', '#1e8449']
+          data: [completed, pending],
+          backgroundColor: ['#198754', '#c92a3d']
         }
       ]
     });

@@ -15,7 +15,10 @@ import {
   LineController,
   LineElement,
   LinearScale,
+  PolarAreaController,
   PointElement,
+  RadarController,
+  RadialLinearScale,
   Tooltip,
 } from 'chart.js';
 
@@ -35,8 +38,11 @@ export const appConfig: ApplicationConfig = {
         LineController,
         LineElement,
         PointElement,
+        RadarController,
+        PolarAreaController,
         DoughnutController,
         ArcElement,
+        RadialLinearScale,
         Legend,
         Tooltip,
         Filler,

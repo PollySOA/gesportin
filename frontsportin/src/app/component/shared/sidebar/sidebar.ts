@@ -39,7 +39,7 @@ export class SidebarComponent {
     const isUser = this.session.isUser();
 
     const homeRoute = isAdmin
-      ? '/admin'
+      ? '/admin/dashboard'
       : isClubAdmin
         ? '/dashboard/teamadmin'
         : isUser

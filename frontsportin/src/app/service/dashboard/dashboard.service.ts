@@ -18,10 +18,14 @@ import { FacturaService } from '../factura-service';
 import { CompraService } from '../compra';
 import { PuntuacionService } from '../puntuacion';
 import { ComentarioartService } from '../comentarioart';
+import { TemporadaService } from '../temporada';
 import { IPage } from '../../model/plist';
+import { IClub } from '../../model/club';
 import { ICategoria } from '../../model/categoria';
 import { IPago } from '../../model/pago';
 import { IPartido } from '../../model/partido';
+import { ITemporada } from '../../model/temporada';
+import { INoticia } from '../../model/noticia';
 import { IUsuario } from '../../model/usuario';
 
 export interface DashboardRawData {
@@ -39,6 +43,9 @@ export interface DashboardRawData {
   puntuaciones: number;
   comentarios: number;
   comentarioarts: number;
+  clubesPage: IPage<IClub>;
+  temporadasPage: IPage<ITemporada>;
+  noticiasPage: IPage<INoticia>;
   usuariosPage: IPage<IUsuario>;
   pagosPage: IPage<IPago>;
   partidosPage: IPage<IPartido>;
@@ -66,6 +73,7 @@ export class DashboardService {
   private readonly compraService = inject(CompraService);
   private readonly puntuacionService = inject(PuntuacionService);
   private readonly comentarioartService = inject(ComentarioartService);
+  private readonly temporadaService = inject(TemporadaService);
 
   private emptyPage<T>(): IPage<T> {
     return {
@@ -105,14 +113,17 @@ export class DashboardService {
     );
   }
 
-  fetchDashboardData(): Observable<DashboardRawData> {
+  fetchDashboardData(selectedClubId = 0, selectedTemporadaId = 0): Observable<DashboardRawData> {
     const isAdmin = this.security.isAdmin();
+    const clubId = this.security.clubFilter(selectedClubId);
     const clubs$ = isAdmin
       ? this.clubService.count().pipe(catchError(() => of(0)))
       : this.countFromPage(this.clubService.getPage(0, 1));
-    const teams$ = isAdmin
-      ? this.equipoService.count().pipe(catchError(() => of(0)))
-      : this.countFromPage(this.equipoService.getPage(0, 1));
+    const teams$ = selectedTemporadaId > 0
+      ? this.equipoService.countByTemporada(selectedTemporadaId).pipe(catchError(() => of(0)))
+      : (isAdmin
+        ? this.equipoService.count().pipe(catchError(() => of(0)))
+        : this.countFromPage(this.equipoService.getPage(0, 1)));
     const players$ = isAdmin
       ? this.jugadorService.count().pipe(catchError(() => of(0)))
       : this.countFromPage(this.jugadorService.getPage(0, 1));
@@ -150,8 +161,19 @@ export class DashboardService {
       ? this.comentarioartService.count().pipe(catchError(() => of(0)))
       : this.countFromPage(this.comentarioartService.getPage(0, 1));
 
+    const clubesPage$ = this.clubService
+      .getPage(0, DashboardService.DASHBOARD_PAGE_SIZE, 'nombre', 'asc')
+      .pipe(catchError(() => of(this.emptyPage<IClub>())));
+    const temporadasPage$ = this.temporadaService
+      .getPage(0, DashboardService.DASHBOARD_PAGE_SIZE, 'descripcion', 'asc', '', clubId)
+      .pipe(catchError(() => of(this.emptyPage<ITemporada>())));
+    const noticiasPage$ = this.noticiaService
+      .getPage(0, DashboardService.DASHBOARD_PAGE_SIZE, 'id', 'desc', '', clubId)
+      .pipe(catchError(() => of(this.emptyPage<INoticia>())));
+    const categoriasPageRequestTemporada = selectedTemporadaId > 0 ? selectedTemporadaId : 0;
+
     const usuariosPage$ = this.usuarioService
-      .getPage(0, DashboardService.DASHBOARD_PAGE_SIZE, 'fechaAlta', 'desc')
+      .getPage(0, DashboardService.DASHBOARD_PAGE_SIZE, 'fechaAlta', 'desc', '', 0, 0, clubId)
       .pipe(catchError(() => of(this.emptyPage<IUsuario>())));
     const pagosPage$ = this.pagoService
       .getPage(0, DashboardService.DASHBOARD_PAGE_SIZE, 'fecha', 'desc')
@@ -160,7 +182,7 @@ export class DashboardService {
       .getPage(0, DashboardService.DASHBOARD_PAGE_SIZE, 'fecha', 'desc')
       .pipe(catchError(() => of(this.emptyPage<IPartido>())));
     const categoriasPage$ = this.categoriaService
-      .getPage(0, DashboardService.DASHBOARD_PAGE_SIZE, 'nombre', 'asc')
+      .getPage(0, DashboardService.DASHBOARD_PAGE_SIZE, 'nombre', 'asc', '', categoriasPageRequestTemporada)
       .pipe(catchError(() => of(this.emptyPage<ICategoria>())));
 
     return forkJoin({
@@ -178,6 +200,9 @@ export class DashboardService {
       puntuaciones: puntuaciones$,
       comentarios: comments$,
       comentarioarts: comentarioarts$,
+      clubesPage: clubesPage$,
+      temporadasPage: temporadasPage$,
+      noticiasPage: noticiasPage$,
       usuariosPage: usuariosPage$,
       pagosPage: pagosPage$,
       partidosPage: partidosPage$,
