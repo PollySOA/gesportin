@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import net.ausiasmarch.gesportin.dto.LigaDTO;
 import net.ausiasmarch.gesportin.entity.LigaEntity;
 import net.ausiasmarch.gesportin.service.LigaService;
 
@@ -28,12 +29,12 @@ public class LigaApi {
     private LigaService oLigaService;
 
     @GetMapping("/{id}")
-    public ResponseEntity<LigaEntity> get(@PathVariable Long id) {
+    public ResponseEntity<LigaDTO> get(@PathVariable Long id) {
         return ResponseEntity.ok(oLigaService.get(id));
     }
 
     @GetMapping
-    public ResponseEntity<Page<LigaEntity>> getPage(
+    public ResponseEntity<Page<LigaDTO>> getPage(
             @PageableDefault(size = 1000) Pageable pageable,
             @RequestParam(required = false) String nombre,
             @RequestParam(required = false) Long id_equipo) {
@@ -41,12 +42,12 @@ public class LigaApi {
     }
 
     @PostMapping
-    public ResponseEntity<LigaEntity> create(@RequestBody LigaEntity liga) {
+    public ResponseEntity<LigaDTO> create(@RequestBody LigaEntity liga) {
         return ResponseEntity.ok(oLigaService.create(liga));
     }
 
     @PutMapping
-    public ResponseEntity<LigaEntity> update(@RequestBody LigaEntity liga) {
+    public ResponseEntity<LigaDTO> update(@RequestBody LigaEntity liga) {
         return ResponseEntity.ok(oLigaService.update(liga));
     }
 
