@@ -42,22 +42,27 @@ public class TipoarticuloService {
         "Temporal", "Permanente", "Exclusivo", "Popular", "Especial"
     };
 
-    public TipoarticuloEntity get(Long id) {
+    private TipoarticuloDTO toDTO(TipoarticuloEntity entity) {
+        return new TipoarticuloDTO(
+                entity,
+                oTipoarticuloRepository.countArticulosByTipoarticuloId(entity.getId()),
+                oCompraRepository.sumVentasByTipoarticuloId(entity.getId()));
+    }
+
+    private Page<TipoarticuloDTO> toPageDTO(Page<TipoarticuloEntity> page) {
+        return page.map(this::toDTO);
+    }
+
+    public TipoarticuloDTO get(Long id) {
         TipoarticuloEntity e = oTipoarticuloRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Tipoarticulo no encontrado con id: " + id));
         if (oSessionService.isEquipoAdmin() || oSessionService.isUsuario()) {
             oSessionService.checkSameClub(e.getClub().getId());
         }
-        return e;
+        return toDTO(e);
     }
 
-    public TipoarticuloDTO getDTO(Long id) {
-        TipoarticuloEntity e = get(id);
-        Double totalVentas = oCompraRepository.sumVentasByTipoarticuloId(id);
-        return new TipoarticuloDTO(e, totalVentas);
-    }
-
-    public Page<TipoarticuloEntity> getPage(Pageable oPageable, String descripcion, Long idClub) {
+    public Page<TipoarticuloDTO> getPage(Pageable oPageable, String descripcion, Long idClub) {
         if (oSessionService.isEquipoAdmin() || oSessionService.isUsuario()) {
             Long myClub = oSessionService.getIdClub();
             if (idClub != null && !idClub.equals(myClub)) {
@@ -67,22 +72,17 @@ public class TipoarticuloService {
         }
         if (descripcion != null && !descripcion.isEmpty()) {
             if (idClub != null) {
-                return oTipoarticuloRepository.findByDescripcionContainingIgnoreCaseAndClubId(descripcion, idClub, oPageable);
+                return toPageDTO(oTipoarticuloRepository.findByDescripcionContainingIgnoreCaseAndClubId(descripcion, idClub, oPageable));
             }
-            return oTipoarticuloRepository.findByDescripcionContainingIgnoreCase(descripcion, oPageable);
+            return toPageDTO(oTipoarticuloRepository.findByDescripcionContainingIgnoreCase(descripcion, oPageable));
         } else if (idClub != null) {
-            return oTipoarticuloRepository.findByClubId(idClub, oPageable);
+            return toPageDTO(oTipoarticuloRepository.findByClubId(idClub, oPageable));
         } else {
-            return oTipoarticuloRepository.findAll(oPageable);
+            return toPageDTO(oTipoarticuloRepository.findAll(oPageable));
         }
     }
 
-    public Page<TipoarticuloDTO> getPageDTO(Pageable oPageable, String descripcion, Long idClub) {
-        return getPage(oPageable, descripcion, idClub)
-                .map(e -> new TipoarticuloDTO(e, oCompraRepository.sumVentasByTipoarticuloId(e.getId())));
-    }
-
-    public TipoarticuloEntity create(TipoarticuloEntity oTipoarticuloEntity) {
+    public TipoarticuloDTO create(TipoarticuloEntity oTipoarticuloEntity) {
         // regular usuarios cannot create tipos de artículo
         oSessionService.denyUsuario();
         if (oSessionService.isEquipoAdmin()) {
@@ -90,10 +90,10 @@ public class TipoarticuloService {
         }
         oTipoarticuloEntity.setId(null);
         oTipoarticuloEntity.setClub(oClubService.get(oTipoarticuloEntity.getClub().getId()));
-        return oTipoarticuloRepository.save(oTipoarticuloEntity);
+        return toDTO(oTipoarticuloRepository.save(oTipoarticuloEntity));
     }
 
-    public TipoarticuloEntity update(TipoarticuloEntity oTipoarticuloEntity) {
+    public TipoarticuloDTO update(TipoarticuloEntity oTipoarticuloEntity) {
         // regular usuarios cannot modify tipos de artículo
         oSessionService.denyUsuario();
         TipoarticuloEntity oTipoarticuloExistente = oTipoarticuloRepository.findById(oTipoarticuloEntity.getId())
@@ -104,7 +104,7 @@ public class TipoarticuloService {
         }
         oTipoarticuloExistente.setDescripcion(oTipoarticuloEntity.getDescripcion());
         oTipoarticuloExistente.setClub(oClubService.get(oTipoarticuloEntity.getClub().getId()));
-        return oTipoarticuloRepository.save(oTipoarticuloExistente);
+        return toDTO(oTipoarticuloRepository.save(oTipoarticuloExistente));
     }
 
     public Long delete(Long id) {

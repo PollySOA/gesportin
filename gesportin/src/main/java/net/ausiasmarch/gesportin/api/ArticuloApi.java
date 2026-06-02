@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import net.ausiasmarch.gesportin.dto.ArticuloDTO;
 import net.ausiasmarch.gesportin.entity.ArticuloEntity;
 import net.ausiasmarch.gesportin.service.ArticuloService;
 
@@ -28,12 +29,12 @@ public class ArticuloApi {
     private ArticuloService oArticuloService;
 
     @GetMapping("/{id}")
-    public ResponseEntity<ArticuloEntity> get(@PathVariable Long id) {
+    public ResponseEntity<ArticuloDTO> get(@PathVariable Long id) {
         return ResponseEntity.ok(oArticuloService.get(id));
     }
 
     @GetMapping
-    public ResponseEntity<Page<ArticuloEntity>> getPage(
+    public ResponseEntity<Page<ArticuloDTO>> getPage(
             @PageableDefault(size = 1000) Pageable pageable,
             @RequestParam(required = false) String descripcion,
             @RequestParam(required = false) Long id_tipoarticulo) {
@@ -41,12 +42,12 @@ public class ArticuloApi {
     }
 
     @PostMapping
-    public ResponseEntity<ArticuloEntity> create(@RequestBody ArticuloEntity articulo) {
+    public ResponseEntity<ArticuloDTO> create(@RequestBody ArticuloEntity articulo) {
         return ResponseEntity.ok(oArticuloService.create(articulo));
     }
 
     @PutMapping
-    public ResponseEntity<ArticuloEntity> update(@RequestBody ArticuloEntity articulo) {
+    public ResponseEntity<ArticuloDTO> update(@RequestBody ArticuloEntity articulo) {
         return ResponseEntity.ok(oArticuloService.update(articulo));
     }
 

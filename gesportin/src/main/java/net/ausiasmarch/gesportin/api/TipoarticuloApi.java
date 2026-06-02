@@ -30,7 +30,7 @@ public class TipoarticuloApi {
 
     @GetMapping("/{id}")
     public ResponseEntity<TipoarticuloDTO> get(@PathVariable Long id) {
-        return ResponseEntity.ok(oTipoarticuloService.getDTO(id));
+        return ResponseEntity.ok(oTipoarticuloService.get(id));
     }
 
     @GetMapping
@@ -38,16 +38,16 @@ public class TipoarticuloApi {
             @PageableDefault(size = 1000) Pageable oPageable,
             @RequestParam(required = false) String descripcion,
             @RequestParam(required = false) Long id_club) {
-        return ResponseEntity.ok(oTipoarticuloService.getPageDTO(oPageable, descripcion, id_club));
+        return ResponseEntity.ok(oTipoarticuloService.getPage(oPageable, descripcion, id_club));
     }
 
     @PostMapping
-    public ResponseEntity<TipoarticuloEntity> create(@RequestBody TipoarticuloEntity tipoarticulo) {
+    public ResponseEntity<TipoarticuloDTO> create(@RequestBody TipoarticuloEntity tipoarticulo) {
         return ResponseEntity.ok(oTipoarticuloService.create(tipoarticulo));
     }
 
     @PutMapping
-    public ResponseEntity<TipoarticuloEntity> update(@RequestBody TipoarticuloEntity tipoarticulo) {
+    public ResponseEntity<TipoarticuloDTO> update(@RequestBody TipoarticuloEntity tipoarticulo) {
         return ResponseEntity.ok(oTipoarticuloService.update(tipoarticulo));
     }
 

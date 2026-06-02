@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import net.ausiasmarch.gesportin.dto.ArticuloDTO;
 import net.ausiasmarch.gesportin.entity.ArticuloEntity;
 import net.ausiasmarch.gesportin.exception.ResourceNotFoundException;
 import net.ausiasmarch.gesportin.exception.UnauthorizedException;
@@ -27,6 +28,21 @@ public class ArticuloService {
     private SessionService oSessionService;
 
     private final Random random = new Random();
+
+    private ArticuloDTO toDTO(ArticuloEntity entity) {
+        return new ArticuloDTO(
+                entity,
+                oArticuloRepository.countComentarioartsByArticuloId(entity.getId()),
+                oArticuloRepository.countPuntuacionartsByArticuloId(entity.getId()),
+                oArticuloRepository.countComprasByArticuloId(entity.getId()),
+                oArticuloRepository.countCarritosByArticuloId(entity.getId()),
+                oArticuloRepository.avgPuntuacionByArticuloId(entity.getId()));
+    }
+
+    private org.springframework.data.domain.Page<ArticuloDTO> toPageDTO(
+            org.springframework.data.domain.Page<ArticuloEntity> page) {
+        return page.map(this::toDTO);
+    }
 
     private final String[] descripciones = {
             "Camiseta", "Pantalón corto", "Medias deportivas", "Balón oficial",
@@ -50,17 +66,17 @@ public class ArticuloService {
             "naranja", "de alto rendimiento", "de última generación", "de diseño ergonómico",
             "de diseño moderno", "de edición limitada", "con tecnología avanzada" };
 
-    public ArticuloEntity get(Long id) {
+    public ArticuloDTO get(Long id) {
         ArticuloEntity e = oArticuloRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Articulo no encontrado con id: " + id));
         if (oSessionService.isEquipoAdmin() || oSessionService.isUsuario()) {
             Long clubId = e.getTipoarticulo().getClub().getId();
             oSessionService.checkSameClub(clubId);
         }
-        return e;
+        return toDTO(e);
     }
 
-    public Page<ArticuloEntity> getPage(Pageable pageable, String descripcion, Long id_tipoarticulo) {
+    public Page<ArticuloDTO> getPage(Pageable pageable, String descripcion, Long id_tipoarticulo) {
         if (oSessionService.isEquipoAdmin() || oSessionService.isUsuario()) {
             Long myClub = oSessionService.getIdClub();
             if (id_tipoarticulo != null) {
@@ -70,24 +86,24 @@ public class ArticuloService {
                 }
             }
             if (descripcion != null && !descripcion.isEmpty() && id_tipoarticulo == null) {
-                return oArticuloRepository.findByDescripcionContainingIgnoreCaseAndTipoarticuloClubId(descripcion, myClub, pageable);
+                return toPageDTO(oArticuloRepository.findByDescripcionContainingIgnoreCaseAndTipoarticuloClubId(descripcion, myClub, pageable));
             }
             if (descripcion == null || descripcion.isEmpty()) {
                 if (id_tipoarticulo == null) {
-                    return oArticuloRepository.findByTipoarticuloClubId(myClub, pageable);
+                    return toPageDTO(oArticuloRepository.findByTipoarticuloClubId(myClub, pageable));
                 }
             }
         }
         if (descripcion != null && !descripcion.isEmpty()) {
-            return oArticuloRepository.findByDescripcionContainingIgnoreCase(descripcion, pageable);
+            return toPageDTO(oArticuloRepository.findByDescripcionContainingIgnoreCase(descripcion, pageable));
         } else if (id_tipoarticulo != null) {
-            return oArticuloRepository.findByTipoarticuloId(id_tipoarticulo, pageable);
+            return toPageDTO(oArticuloRepository.findByTipoarticuloId(id_tipoarticulo, pageable));
         } else {
-            return oArticuloRepository.findAll(pageable);
+            return toPageDTO(oArticuloRepository.findAll(pageable));
         }
     }
 
-    public ArticuloEntity create(ArticuloEntity oArticuloEntity) {
+    public ArticuloDTO create(ArticuloEntity oArticuloEntity) {
         // regular usuarios cannot create articulos
         oSessionService.denyUsuario();
         if (oSessionService.isEquipoAdmin()) {
@@ -97,10 +113,10 @@ public class ArticuloService {
         }
         oArticuloEntity.setId(null);
         oArticuloEntity.setTipoarticulo(oTipoarticuloService.get(oArticuloEntity.getTipoarticulo().getId()));
-        return oArticuloRepository.save(oArticuloEntity);
+        return toDTO(oArticuloRepository.save(oArticuloEntity));
     }
 
-    public ArticuloEntity update(ArticuloEntity oArticuloEntity) {
+    public ArticuloDTO update(ArticuloEntity oArticuloEntity) {
         // regular usuarios cannot modify articulos
         oSessionService.denyUsuario();
         ArticuloEntity oArticuloExistente = oArticuloRepository.findById(oArticuloEntity.getId())
@@ -118,7 +134,7 @@ public class ArticuloService {
         oArticuloExistente.setDescuento(oArticuloEntity.getDescuento());
         oArticuloExistente.setImagen(oArticuloEntity.getImagen());
         oArticuloExistente.setTipoarticulo(oTipoarticuloService.get(oArticuloEntity.getTipoarticulo().getId()));
-        return oArticuloRepository.save(oArticuloExistente);
+        return toDTO(oArticuloRepository.save(oArticuloExistente));
     }
 
     public Long delete(Long id) {

@@ -1,6 +1,5 @@
 package net.ausiasmarch.gesportin.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -11,22 +10,15 @@ import net.ausiasmarch.gesportin.entity.TipoarticuloEntity;
 @NoArgsConstructor
 public class TipoarticuloDTO extends TipoarticuloEntity {
 
+    private int articulos;
     private Double totalVentas;
 
-    @JsonIgnore
-    @Getter(onMethod_ = @JsonIgnore)
-    private int articulosCount;
-
-    public TipoarticuloDTO(TipoarticuloEntity entity, Double totalVentas) {
+    public TipoarticuloDTO(TipoarticuloEntity entity, int articulos, Double totalVentas) {
         setId(entity.getId());
         setDescripcion(entity.getDescripcion());
         setClub(entity.getClub());
-        this.articulosCount = entity.getArticulos();
+        this.articulos = articulos;
         this.totalVentas = totalVentas;
     }
-
-    @Override
-    public int getArticulos() {
-        return articulosCount;
-    }
 }
+
