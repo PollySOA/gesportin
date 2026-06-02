@@ -87,7 +87,12 @@ Asmismo, es importante implementar medidas de seguridad adecuadas para garantiza
 
 ### Shared files 
 
-En las adiciones y modificaciones del código NO debes tocar los ficheros compartidos de entorno servidor y entorno cliente ya que estos ficheros son utilizados por el equipo de desarrollo para configurar el entorno de ejecución del backend y del frontend, y cualquier cambio en estos ficheros podría afectar a todos los desarrolladores. Cuando desees modificar la configuración del entorno de ejecución, debes comunicarlo al equipo de desarrollo para tomar una decisión conjunta sobre cómo proceder. Los archivos que no debes modificar son los siguientes:
+En las adiciones y modificaciones del código NO debes tocar los ficheros compartidos de entorno servidor y entorno cliente ya que estos ficheros son utilizados por el equipo de desarrollo para configurar el entorno de ejecución del backend y del frontend, y cualquier cambio en estos ficheros podría afectar a todos los desarrolladores. 
+
+Cuando desees modificar la configuración del entorno de ejecución, debes comunicarlo al equipo de desarrollo para tomar una decisión conjunta sobre cómo proceder. 
+
+Los archivos que no debes modificar son los siguientes:
+
 - entorno servidor:
   - /docker-compose-lamp-master/.env
   - /docker-compose-lamp-master/docker-compose.yml
@@ -114,7 +119,13 @@ El flujo de trabajo de Git y Github debes dejarlo en manos de los desarrolladore
 
 ## Detailed Guidance
 
-Load the detailed guidance based on on context:
+Dispones de una descripción detallada del proyecto en ./references que cada cierto tiempo se va actualizando.
+
+Debes cargar la información detallada de cada referencia según el contexto de tu desarrollo, para asegurarte de seguir las mejores prácticas y sobretodo mantener la coherencia en el proyecto.
+
+Es muy importante que cuando cargues cada fichero de información de referencia del proyecto, informes que has leido y entendido el contenido del fichero, para que haya constancia. Si encuantras una referencia erronea o desactualizada, debes informar al equipo de desarrollo para que se tome una decisión conjunta sobre cómo proceder.
+
+A continuación se muestra una lista de enlaces a referencias detalladas para que la cargues según el contexto y necesidades de tu desarrollo:
 
 ### Estructura de la API
 

@@ -27,7 +27,7 @@ Las propiedades de configuración se encuentran en `src/main/resources/applicati
 
 ## 2. Estructura de paquetes
 
-```
+```text
 net.ausiasmarch.gesportin/
 ├── GesportinApplication.java       # Clase principal Spring Boot
 ├── api/                            # Controllers REST (@RestController)
@@ -77,6 +77,7 @@ private Long id;
 ### 3.4 Relaciones
 
 #### ManyToOne (relaciones "hacia arriba")
+
 - `fetch = FetchType.EAGER` **siempre** en ManyToOne.
 - La columna FK sigue el patrón `id_<nombre_entidad_referenciada>`.
 
@@ -88,8 +89,9 @@ private ClubEntity club;
 ```
 
 #### OneToMany (colecciones "hacia abajo")
+
 - `fetch = FetchType.LAZY` **siempre** en OneToMany.
-- La lista **nunca** se serializa directamente: se oculta el getter con `@Getter(AccessLevel.NONE)` y se reemplaza por un método que devuelve el **count** como `int`.
+- La lista **nunca** se serializa directamente: se oculta el getter con `@Getter(AccessLevel.NONE)` y se reemplaza por un método que devuelve el **count** como `int`. El método que devuelve el **count** como `int` se llama get + nombreDelCampoPluralizado (p.ej. `getJugadores()`). No se exhibe un campo setter para la lista, ya que la gestión de la relación se hace a través del lado ManyToOne.
 
 ```java
 @Getter(AccessLevel.NONE)
