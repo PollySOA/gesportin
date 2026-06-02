@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import net.ausiasmarch.gesportin.dto.CompraDTO;
 import net.ausiasmarch.gesportin.entity.CompraEntity;
 import net.ausiasmarch.gesportin.service.CompraService;
 
@@ -27,12 +28,12 @@ public class CompraApi {
     private CompraService oCompraService;
 
     @GetMapping("/{id}")
-    public ResponseEntity<CompraEntity> get(@PathVariable Long id) {
+    public ResponseEntity<CompraDTO> get(@PathVariable Long id) {
         return ResponseEntity.ok(oCompraService.get(id));
     }
 
     @GetMapping
-    public ResponseEntity<Page<CompraEntity>> getPage(
+    public ResponseEntity<Page<CompraDTO>> getPage(
             Pageable oPageable,
             @RequestParam(required = false) Long id_articulo,
             @RequestParam(required = false) Long id_factura
@@ -41,12 +42,12 @@ public class CompraApi {
     }
 
     @PostMapping
-    public ResponseEntity<CompraEntity> create(@RequestBody CompraEntity compraEntity) {
+    public ResponseEntity<CompraDTO> create(@RequestBody CompraEntity compraEntity) {
         return ResponseEntity.ok(oCompraService.create(compraEntity));
     }
 
     @PutMapping
-    public ResponseEntity<CompraEntity> update(@RequestBody CompraEntity compraEntity) {
+    public ResponseEntity<CompraDTO> update(@RequestBody CompraEntity compraEntity) {
         return ResponseEntity.ok(oCompraService.update(compraEntity));
     }
 

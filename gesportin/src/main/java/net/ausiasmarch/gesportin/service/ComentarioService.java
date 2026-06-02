@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import net.ausiasmarch.gesportin.dto.ComentarioDTO;
 import net.ausiasmarch.gesportin.entity.ComentarioEntity;
 import net.ausiasmarch.gesportin.exception.ResourceNotFoundException;
 import net.ausiasmarch.gesportin.exception.UnauthorizedException;
@@ -32,6 +33,14 @@ public class ComentarioService {
 
     ArrayList<String> alComentarios = new ArrayList<>();
 
+    private ComentarioDTO toDTO(ComentarioEntity entity) {
+        return new ComentarioDTO(entity);
+    }
+
+    private Page<ComentarioDTO> toPageDTO(Page<ComentarioEntity> page) {
+        return page.map(this::toDTO);
+    }
+
     public ComentarioService() {
         alComentarios.add("Excelente artículo, muy informativo.");
         alComentarios.add("No estoy de acuerdo con algunos puntos.");
@@ -55,17 +64,17 @@ public class ComentarioService {
         alComentarios.add("Espero leer más artículos como este.");
     }
 
-    public ComentarioEntity get(Long id) {
+    public ComentarioDTO get(Long id) {
         ComentarioEntity e = oComentariosRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Comentario no encontrado con id: " + id));
         if (oSessionService.isEquipoAdmin() || oSessionService.isUsuario()) {
             Long clubId = e.getNoticia().getClub().getId();
             oSessionService.checkSameClub(clubId);
         }
-        return e;
+        return toDTO(e);
     }
 
-    public Page<ComentarioEntity> getPage(Pageable oPageable, String contenido, Long id_usuario, Long id_noticia) {
+    public Page<ComentarioDTO> getPage(Pageable oPageable, String contenido, Long id_usuario, Long id_noticia) {
         if (oSessionService.isEquipoAdmin() || oSessionService.isUsuario()) {
             Long myClub = oSessionService.getIdClub();
             if (id_usuario != null) {
@@ -85,20 +94,20 @@ public class ComentarioService {
                 }
             }
             if ((contenido == null || contenido.isEmpty()) && id_usuario == null && id_noticia == null) {
-                return oComentariosRepository.findByNoticiaClubId(myClub, oPageable);
+                return toPageDTO(oComentariosRepository.findByNoticiaClubId(myClub, oPageable));
             }
         }
         if (contenido != null && !contenido.isEmpty()) {
-            return oComentariosRepository.findByContenidoContainingIgnoreCase(contenido, oPageable);
+            return toPageDTO(oComentariosRepository.findByContenidoContainingIgnoreCase(contenido, oPageable));
         } else if (id_usuario != null) {
-            return oComentariosRepository.findByUsuarioId(id_usuario, oPageable);
+            return toPageDTO(oComentariosRepository.findByUsuarioId(id_usuario, oPageable));
         } else if (id_noticia != null) {
-            return oComentariosRepository.findByNoticiaId(id_noticia, oPageable);
+            return toPageDTO(oComentariosRepository.findByNoticiaId(id_noticia, oPageable));
         } else
-        return oComentariosRepository.findAll(oPageable);
+        return toPageDTO(oComentariosRepository.findAll(oPageable));
     }
 
-    public ComentarioEntity create(ComentarioEntity oComentarioEntity) {
+    public ComentarioDTO create(ComentarioEntity oComentarioEntity) {
         // Ensure the noticia exists and belongs to the allowed club (if any)
         var noticia = oNoticaService.get(oComentarioEntity.getNoticia().getId());
         if (oSessionService.isEquipoAdmin() || oSessionService.isUsuario()) {
@@ -112,10 +121,10 @@ public class ComentarioService {
         }
         oComentarioEntity.setId(null);
         oComentarioEntity.setNoticia(noticia);
-        return oComentariosRepository.save(oComentarioEntity);
+        return toDTO(oComentariosRepository.save(oComentarioEntity));
     }
 
-    public ComentarioEntity update(ComentarioEntity oComentarioEntity) {
+    public ComentarioDTO update(ComentarioEntity oComentarioEntity) {
         ComentarioEntity oComentarioExistente = oComentariosRepository.findById(oComentarioEntity.getId())
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Comentario no encontrado con id: " + oComentarioEntity.getId()));
@@ -132,7 +141,7 @@ public class ComentarioService {
         }
         oComentarioExistente.setContenido(oComentarioEntity.getContenido());
         oComentarioExistente.setNoticia(oNoticaService.get(oComentarioEntity.getNoticia().getId()));
-        return oComentariosRepository.save(oComentarioExistente);
+        return toDTO(oComentariosRepository.save(oComentarioExistente));
     }
 
     public Long delete(Long id) {

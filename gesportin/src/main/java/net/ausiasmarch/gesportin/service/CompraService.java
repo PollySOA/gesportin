@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import net.ausiasmarch.gesportin.dto.CompraDTO;
 import net.ausiasmarch.gesportin.entity.CompraEntity;
 import net.ausiasmarch.gesportin.exception.ResourceNotFoundException;
 import net.ausiasmarch.gesportin.exception.UnauthorizedException;
@@ -36,7 +37,15 @@ public class CompraService {
     @Autowired
     private SessionService oSessionService;
 
-    public CompraEntity get(Long id) {
+    private CompraDTO toDTO(CompraEntity entity) {
+        return new CompraDTO(entity);
+    }
+
+    private Page<CompraDTO> toPageDTO(Page<CompraEntity> page) {
+        return page.map(this::toDTO);
+    }
+
+    public CompraDTO get(Long id) {
         CompraEntity e = oCompraRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Compra no encontrada con id: " + id));
         if (oSessionService.isEquipoAdmin()) {
@@ -52,10 +61,10 @@ public class CompraService {
             }
             oSessionService.checkSameClub(e.getArticulo().getTipoarticulo().getClub().getId());
         }
-        return e;
+        return toDTO(e);
     }
 
-    public Page<CompraEntity> getPage(Pageable pageable, Long id_articulo, Long id_factura) {
+    public Page<CompraDTO> getPage(Pageable pageable, Long id_articulo, Long id_factura) {
         if (oSessionService.isEquipoAdmin()) {
             Long myClub = oSessionService.getIdClub();
             if (id_articulo != null) {
@@ -71,7 +80,7 @@ public class CompraService {
                 }
             }
             if (id_articulo == null && id_factura == null) {
-                return oCompraRepository.findByArticuloTipoarticuloClubId(myClub, pageable);
+                return toPageDTO(oCompraRepository.findByArticuloTipoarticuloClubId(myClub, pageable));
             }
         }
         if (oSessionService.isUsuario()) {
@@ -81,7 +90,7 @@ public class CompraService {
                     throw new UnauthorizedException("Acceso denegado: solo puede ver sus propias compras");
                 }
             } else if (id_articulo == null) {
-                return oCompraRepository.findByFacturaUsuarioId(currentUserId, pageable);
+                return toPageDTO(oCompraRepository.findByFacturaUsuarioId(currentUserId, pageable));
             }
             // when filtering by articulo, ensure it belongs to the user's club
             if (id_articulo != null) {
@@ -93,16 +102,16 @@ public class CompraService {
             }
         }
         if (id_articulo != null) {
-            return oCompraRepository.findByArticuloId(id_articulo, pageable);
+            return toPageDTO(oCompraRepository.findByArticuloId(id_articulo, pageable));
         } else if (id_factura != null) {
-            return oCompraRepository.findByFacturaId(id_factura, pageable);
+            return toPageDTO(oCompraRepository.findByFacturaId(id_factura, pageable));
         } else {
-            return oCompraRepository.findAll(pageable);
+            return toPageDTO(oCompraRepository.findAll(pageable));
         }
 
     }
 
-    public CompraEntity create(CompraEntity oCompraEntity) {
+    public CompraDTO create(CompraEntity oCompraEntity) {
         if (oSessionService.isEquipoAdmin()) {
             throw new UnauthorizedException("Acceso denegado: equipo‑admin no puede crear compras");
         }
@@ -112,10 +121,10 @@ public class CompraService {
         oCompraEntity.setArticulo(oArticuloService.get(oCompraEntity.getArticulo().getId()));
         oCompraEntity.setFactura(oFacturaService.get(oCompraEntity.getFactura().getId()));
         oCompraEntity.setId(null);
-        return oCompraRepository.save(oCompraEntity);
+        return toDTO(oCompraRepository.save(oCompraEntity));
     }
 
-    public CompraEntity update(CompraEntity oCompraEntity) {
+    public CompraDTO update(CompraEntity oCompraEntity) {
         if (oSessionService.isEquipoAdmin()) {
             throw new UnauthorizedException("Acceso denegado: equipo‑admin no puede modificar compras");
         }
@@ -129,7 +138,7 @@ public class CompraService {
         oCompraExistente.setPrecio(oCompraEntity.getPrecio());
         oCompraExistente.setArticulo(oArticuloService.get(oCompraEntity.getArticulo().getId()));
         oCompraExistente.setFactura(oFacturaService.get(oCompraEntity.getFactura().getId()));
-        return oCompraRepository.save(oCompraExistente);
+        return toDTO(oCompraRepository.save(oCompraExistente));
     }
 
     public Long delete(Long id) {

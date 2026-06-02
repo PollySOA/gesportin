@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import net.ausiasmarch.gesportin.dto.ComentarioDTO;
 import net.ausiasmarch.gesportin.entity.ComentarioEntity;
 import net.ausiasmarch.gesportin.service.ComentarioService;
 
@@ -28,12 +29,12 @@ public class ComentarioApi {
     private ComentarioService oComentarioService;
 
     @GetMapping("/{id}")
-    public ResponseEntity<ComentarioEntity> get(@PathVariable Long id) {
+    public ResponseEntity<ComentarioDTO> get(@PathVariable Long id) {
         return ResponseEntity.ok(oComentarioService.get(id));
     }
 
     @GetMapping
-    public ResponseEntity<Page<ComentarioEntity>> getPage(
+    public ResponseEntity<Page<ComentarioDTO>> getPage(
             @PageableDefault(size = 1000) Pageable pageable,
             @RequestParam(required = false) String contenido,
             @RequestParam(required = false) Long id_usuario,
@@ -42,12 +43,12 @@ public class ComentarioApi {
     }
 
     @PostMapping
-    public ResponseEntity<ComentarioEntity> create(@RequestBody ComentarioEntity comentario) {
+    public ResponseEntity<ComentarioDTO> create(@RequestBody ComentarioEntity comentario) {
         return ResponseEntity.ok(oComentarioService.create(comentario));
     }
 
     @PutMapping
-    public ResponseEntity<ComentarioEntity> update(@RequestBody ComentarioEntity comentario) {
+    public ResponseEntity<ComentarioDTO> update(@RequestBody ComentarioEntity comentario) {
         return ResponseEntity.ok(oComentarioService.update(comentario));
     }
 
