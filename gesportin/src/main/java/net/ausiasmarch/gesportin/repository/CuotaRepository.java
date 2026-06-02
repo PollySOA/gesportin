@@ -3,6 +3,8 @@ package net.ausiasmarch.gesportin.repository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import net.ausiasmarch.gesportin.entity.CuotaEntity;
 
@@ -14,4 +16,8 @@ public interface CuotaRepository extends JpaRepository<CuotaEntity, Long> {
 
     // used by equipo-admin to restrict cuotas to their club
     Page<CuotaEntity> findByEquipoCategoriaTemporadaClubId(Long clubId, Pageable pageable);
+
+    @Query("SELECT COUNT(p) FROM PagoEntity p WHERE p.cuota.id = :cuotaId")
+    int countPagosByCuotaId(@Param("cuotaId") Long cuotaId);
 }
+

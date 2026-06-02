@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import net.ausiasmarch.gesportin.dto.CuotaDTO;
 import net.ausiasmarch.gesportin.entity.CuotaEntity;
 import net.ausiasmarch.gesportin.service.CuotaService;
 
@@ -28,12 +29,12 @@ public class CuotaApi {
     private CuotaService oCuotaService;
 
     @GetMapping("/{id}")
-    public ResponseEntity<CuotaEntity> get(@PathVariable Long id) {
+    public ResponseEntity<CuotaDTO> get(@PathVariable Long id) {
         return ResponseEntity.ok(oCuotaService.get(id));
     }
 
     @GetMapping
-    public ResponseEntity<Page<CuotaEntity>> getPage(
+    public ResponseEntity<Page<CuotaDTO>> getPage(
             @PageableDefault(size = 1000) Pageable pageable,
             @RequestParam(required = false) String descripcion,
             @RequestParam(required = false) Long id_equipo) {
@@ -41,12 +42,12 @@ public class CuotaApi {
     }
 
     @PostMapping
-    public ResponseEntity<CuotaEntity> create(@RequestBody CuotaEntity cuotaEntity) {
+    public ResponseEntity<CuotaDTO> create(@RequestBody CuotaEntity cuotaEntity) {
         return ResponseEntity.ok(oCuotaService.create(cuotaEntity));
     }
 
     @PutMapping
-    public ResponseEntity<CuotaEntity> update(@RequestBody CuotaEntity cuotaEntity) {
+    public ResponseEntity<CuotaDTO> update(@RequestBody CuotaEntity cuotaEntity) {
         return ResponseEntity.ok(oCuotaService.update(cuotaEntity));
     }
 

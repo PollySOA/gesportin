@@ -2,7 +2,6 @@ package net.ausiasmarch.gesportin.entity;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
@@ -13,14 +12,11 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
@@ -49,12 +45,5 @@ public class CuotaEntity {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "id_equipo")
     private EquipoEntity equipo;
-
-    @Getter(AccessLevel.NONE)
-    @OneToMany(mappedBy = "cuota", fetch = FetchType.LAZY)
-    private List<PagoEntity> pagos;
-
-    public int getPagos() {
-        return pagos != null ? pagos.size() : 0;
-    }
 }
+

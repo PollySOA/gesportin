@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import net.ausiasmarch.gesportin.dto.CuotaDTO;
 import net.ausiasmarch.gesportin.entity.CuotaEntity;
 import net.ausiasmarch.gesportin.exception.ResourceNotFoundException;
 import net.ausiasmarch.gesportin.exception.UnauthorizedException;
@@ -26,17 +27,26 @@ public class CuotaService {
     @Autowired
     private SessionService oSessionService;
 
-    public CuotaEntity get(Long id) {
+    private CuotaDTO toDTO(CuotaEntity entity) {
+        int pagos = oCuotaRepository.countPagosByCuotaId(entity.getId());
+        return new CuotaDTO(entity, pagos);
+    }
+
+    private Page<CuotaDTO> toPageDTO(Page<CuotaEntity> page) {
+        return page.map(this::toDTO);
+    }
+
+    public CuotaDTO get(Long id) {
         CuotaEntity e = oCuotaRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Cuota no encontrado con id: " + id));
         if (oSessionService.isEquipoAdmin() || oSessionService.isUsuario()) {
             Long clubId = e.getEquipo().getCategoria().getTemporada().getClub().getId();
             oSessionService.checkSameClub(clubId);
         }
-        return e;
+        return toDTO(e);
     }
 
-    public Page<CuotaEntity> getPage(Pageable pageable, String descripcion, Long id_equipo) {
+    public Page<CuotaDTO> getPage(Pageable pageable, String descripcion, Long id_equipo) {
         if (oSessionService.isEquipoAdmin() || oSessionService.isUsuario()) {
             Long myClub = oSessionService.getIdClub();
             if (id_equipo != null) {
@@ -46,19 +56,19 @@ public class CuotaService {
                 }
             }
             if ((descripcion == null || descripcion.isEmpty()) && id_equipo == null) {
-                return oCuotaRepository.findByEquipoCategoriaTemporadaClubId(myClub, pageable);
+                return toPageDTO(oCuotaRepository.findByEquipoCategoriaTemporadaClubId(myClub, pageable));
             }
         }
         if (descripcion != null && !descripcion.isEmpty()) {
-            return oCuotaRepository.findByDescripcionContainingIgnoreCase(descripcion, pageable);
+            return toPageDTO(oCuotaRepository.findByDescripcionContainingIgnoreCase(descripcion, pageable));
         } else if (id_equipo != null) {
-            return oCuotaRepository.findByEquipoId(id_equipo, pageable);
+            return toPageDTO(oCuotaRepository.findByEquipoId(id_equipo, pageable));
         } else {
-            return oCuotaRepository.findAll(pageable);
+            return toPageDTO(oCuotaRepository.findAll(pageable));
         }
     }
 
-    public CuotaEntity create(CuotaEntity oCuotaEntity) {
+    public CuotaDTO create(CuotaEntity oCuotaEntity) {
         // regular usuarios cannot create cuotas
         oSessionService.denyUsuario();
         if (oSessionService.isEquipoAdmin()) {
@@ -69,10 +79,11 @@ public class CuotaService {
         oCuotaEntity.setId(null);
         oCuotaEntity.setFecha(LocalDateTime.now());
         oCuotaEntity.setEquipo(oEquipoService.get(oCuotaEntity.getEquipo().getId()));
-        return oCuotaRepository.save(oCuotaEntity);
+        CuotaEntity saved = oCuotaRepository.save(oCuotaEntity);
+        return toDTO(saved);
     }
 
-    public CuotaEntity update(CuotaEntity oCuotaEntity) {
+    public CuotaDTO update(CuotaEntity oCuotaEntity) {
         // regular usuarios cannot modify cuotas
         oSessionService.denyUsuario();
         CuotaEntity oCuotaExistente = oCuotaRepository.findById(oCuotaEntity.getId())
@@ -88,7 +99,8 @@ public class CuotaService {
         oCuotaExistente.setCantidad(oCuotaEntity.getCantidad());
         oCuotaExistente.setFecha(oCuotaEntity.getFecha());
         oCuotaExistente.setEquipo(oEquipoService.get(oCuotaEntity.getEquipo().getId()));
-        return oCuotaRepository.save(oCuotaExistente);
+        CuotaEntity saved = oCuotaRepository.save(oCuotaExistente);
+        return toDTO(saved);
     }
 
     public Long delete(Long id) {
