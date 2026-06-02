@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import net.ausiasmarch.gesportin.dto.CategoriaDTO;
 import net.ausiasmarch.gesportin.entity.CategoriaEntity;
 import net.ausiasmarch.gesportin.service.CategoriaService;
 
@@ -28,12 +29,12 @@ public class CategoriaApi {
     private CategoriaService oCategoriaService;
 
     @GetMapping("/{id}")
-    public ResponseEntity<CategoriaEntity> get(@PathVariable Long id) {
+    public ResponseEntity<CategoriaDTO> get(@PathVariable Long id) {
         return ResponseEntity.ok(oCategoriaService.get(id));
     }
 
     @GetMapping
-    public ResponseEntity<Page<CategoriaEntity>> getPage(
+    public ResponseEntity<Page<CategoriaDTO>> getPage(
             Pageable pageable,
             @org.springframework.web.bind.annotation.RequestParam(required = false) Optional<String> nombre,
             @org.springframework.web.bind.annotation.RequestParam(required = false) Optional<Long> id_temporada) {
@@ -41,12 +42,12 @@ public class CategoriaApi {
     }
 
     @PostMapping
-    public ResponseEntity<CategoriaEntity> create(@RequestBody CategoriaEntity categoriaEntity) {
+    public ResponseEntity<CategoriaDTO> create(@RequestBody CategoriaEntity categoriaEntity) {
         return ResponseEntity.ok(oCategoriaService.create(categoriaEntity));
     }
 
     @PutMapping
-    public ResponseEntity<CategoriaEntity> update(@RequestBody CategoriaEntity categoriaEntity) {
+    public ResponseEntity<CategoriaDTO> update(@RequestBody CategoriaEntity categoriaEntity) {
         return ResponseEntity.ok(oCategoriaService.update(categoriaEntity));
     }
 

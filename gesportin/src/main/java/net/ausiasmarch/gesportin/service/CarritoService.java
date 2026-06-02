@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import net.ausiasmarch.gesportin.dto.CarritoDTO;
 import net.ausiasmarch.gesportin.entity.CarritoEntity;
 import net.ausiasmarch.gesportin.entity.CompraEntity;
 import net.ausiasmarch.gesportin.entity.FacturaEntity;
@@ -44,7 +45,16 @@ public class CarritoService {
     @Autowired
     private SessionService oSessionService;
 
-    public CarritoEntity get(Long id) {
+    private CarritoDTO toDTO(CarritoEntity entity) {
+        return new CarritoDTO(entity);
+    }
+
+    private org.springframework.data.domain.Page<CarritoDTO> toPageDTO(
+            org.springframework.data.domain.Page<CarritoEntity> page) {
+        return page.map(this::toDTO);
+    }
+
+    public CarritoDTO get(Long id) {
         if (oSessionService.isEquipoAdmin()) {
             throw new UnauthorizedException("Acceso denegado: no puede gestionar carritos");
         }
@@ -61,10 +71,10 @@ public class CarritoService {
                 throw new UnauthorizedException("Acceso denegado: solo puede ver artículos de su club");
             }
         }
-        return carrito;
+        return toDTO(carrito);
     }
 
-    public Page<CarritoEntity> getPage(Pageable pageable, Long id_usuario, Long id_articulo) {
+    public Page<CarritoDTO> getPage(Pageable pageable, Long id_usuario, Long id_articulo) {
         if (oSessionService.isEquipoAdmin()) {
             throw new UnauthorizedException("Acceso denegado: no puede gestionar carritos");
         }
@@ -76,7 +86,7 @@ public class CarritoService {
             id_usuario = currentUserId;
         }
         if (id_usuario != null) {
-            return oCarritoRepository.findByUsuarioId(id_usuario, pageable);
+            return toPageDTO(oCarritoRepository.findByUsuarioId(id_usuario, pageable));
         } else if (id_articulo != null) {
             // ensure articulo belongs to user's club when user is a regular usuario
             if (oSessionService.isUsuario()) {
@@ -86,16 +96,16 @@ public class CarritoService {
                     throw new UnauthorizedException("Acceso denegado: solo puede ver artículos de su club");
                 }
             }
-            return oCarritoRepository.findByArticuloId(id_articulo, pageable);
+            return toPageDTO(oCarritoRepository.findByArticuloId(id_articulo, pageable));
         } else {
             if (oSessionService.isUsuario()) {
-                return oCarritoRepository.findByUsuarioId(oSessionService.getIdUsuario(), pageable);
+                return toPageDTO(oCarritoRepository.findByUsuarioId(oSessionService.getIdUsuario(), pageable));
             }
-            return oCarritoRepository.findAll(pageable);
+            return toPageDTO(oCarritoRepository.findAll(pageable));
         }
     }
 
-    public CarritoEntity create(CarritoEntity carrito) {
+    public CarritoDTO create(CarritoEntity carrito) {
         if (oSessionService.isEquipoAdmin()) {
             throw new UnauthorizedException("Acceso denegado: no puede gestionar carritos");
         }
@@ -113,10 +123,10 @@ public class CarritoService {
         }
         carrito.setId(null);
         carrito.setArticulo(oArticuloService.get(carrito.getArticulo().getId()));
-        return oCarritoRepository.save(carrito);
+        return toDTO(oCarritoRepository.save(carrito));
     }
 
-    public CarritoEntity update(CarritoEntity carrito) {
+    public CarritoDTO update(CarritoEntity carrito) {
         if (oSessionService.isEquipoAdmin()) {
             throw new UnauthorizedException("Acceso denegado: no puede gestionar carritos");
         }
@@ -138,7 +148,7 @@ public class CarritoService {
         }
         existente.setCantidad(carrito.getCantidad());
         existente.setArticulo(oArticuloService.get(carrito.getArticulo().getId()));
-        return oCarritoRepository.save(existente);
+        return toDTO(oCarritoRepository.save(existente));
     }
 
     public Long delete(Long id) {

@@ -7,6 +7,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import net.ausiasmarch.gesportin.dto.CarritoDTO;
 import net.ausiasmarch.gesportin.entity.CarritoEntity;
 import net.ausiasmarch.gesportin.entity.FacturaEntity;
 import net.ausiasmarch.gesportin.service.CarritoService;
@@ -20,12 +21,12 @@ public class CarritoApi {
     private CarritoService oCarritoService;
 
     @GetMapping("/{id}")
-    public ResponseEntity<CarritoEntity> get(@PathVariable Long id) {
+    public ResponseEntity<CarritoDTO> get(@PathVariable Long id) {
         return ResponseEntity.ok(oCarritoService.get(id));
     }
 
     @GetMapping
-    public ResponseEntity<Page<CarritoEntity>> getPage(
+    public ResponseEntity<Page<CarritoDTO>> getPage(
             @PageableDefault(size = 1000) Pageable pageable,
             @RequestParam(required = false) Long id_usuario,
             @RequestParam(required = false) Long id_articulo) {
@@ -33,12 +34,12 @@ public class CarritoApi {
     }
 
     @PostMapping
-    public ResponseEntity<CarritoEntity> create(@RequestBody CarritoEntity carrito) {
+    public ResponseEntity<CarritoDTO> create(@RequestBody CarritoEntity carrito) {
         return ResponseEntity.ok(oCarritoService.create(carrito));
     }
 
     @PutMapping
-    public ResponseEntity<CarritoEntity> update(@RequestBody CarritoEntity carrito) {
+    public ResponseEntity<CarritoDTO> update(@RequestBody CarritoEntity carrito) {
         return ResponseEntity.ok(oCarritoService.update(carrito));
     }
 

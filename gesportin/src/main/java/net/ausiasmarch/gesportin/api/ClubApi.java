@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import net.ausiasmarch.gesportin.dto.ClubDTO;
 import net.ausiasmarch.gesportin.entity.ClubEntity;
 import net.ausiasmarch.gesportin.service.ClubService;
 
@@ -23,22 +24,22 @@ public class ClubApi {
     private ClubService oClubService;
 
     @GetMapping("/{id}")
-    public ResponseEntity<ClubEntity> get(@PathVariable Long id) {
+    public ResponseEntity<ClubDTO> get(@PathVariable Long id) {
         return ResponseEntity.ok(oClubService.get(id));
     }
 
     @GetMapping
-    public ResponseEntity<org.springframework.data.domain.Page<ClubEntity>> getPage(org.springframework.data.domain.Pageable pageable) {
+    public ResponseEntity<org.springframework.data.domain.Page<ClubDTO>> getPage(org.springframework.data.domain.Pageable pageable) {
         return ResponseEntity.ok(oClubService.getPage(pageable));
     }
 
     @PostMapping
-    public ResponseEntity<ClubEntity> create(@RequestBody ClubEntity clubEntity) {
+    public ResponseEntity<ClubDTO> create(@RequestBody ClubEntity clubEntity) {
         return ResponseEntity.ok(oClubService.create(clubEntity));
     }
 
     @PutMapping
-    public ResponseEntity<ClubEntity> update(@RequestBody ClubEntity clubEntity) {
+    public ResponseEntity<ClubDTO> update(@RequestBody ClubEntity clubEntity) {
         return ResponseEntity.ok(oClubService.update(clubEntity));
     }
 

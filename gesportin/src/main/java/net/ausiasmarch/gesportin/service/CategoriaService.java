@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import net.ausiasmarch.gesportin.dto.CategoriaDTO;
 import net.ausiasmarch.gesportin.entity.CategoriaEntity;
 import net.ausiasmarch.gesportin.exception.ResourceNotFoundException;
 import net.ausiasmarch.gesportin.exception.UnauthorizedException;
@@ -29,17 +30,25 @@ public class CategoriaService {
 
     private static final String[] CATEGORIAS = {"Querubín", "Pre-benjamín", "Benjamín", "Alevín", "Infantil", "Cadete", "Juvenil", "Amateur"};
 
-    public CategoriaEntity get(Long id) {
+    private CategoriaDTO toDTO(CategoriaEntity entity) {
+        return new CategoriaDTO(entity, oCategoriaRepository.countEquiposByCategoriaId(entity.getId()));
+    }
+
+    private Page<CategoriaDTO> toPageDTO(Page<CategoriaEntity> page) {
+        return page.map(this::toDTO);
+    }
+
+    public CategoriaDTO get(Long id) {
         CategoriaEntity e = oCategoriaRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Categoria no encontrado con id: " + id));
         if (oSessionService.isEquipoAdmin() || oSessionService.isUsuario()) {
             Long clubId = e.getTemporada().getClub().getId();
             oSessionService.checkSameClub(clubId);
         }
-        return e;
+        return toDTO(e);
     }
 
-    public Page<CategoriaEntity> getPage(Pageable pageable, Optional<String> nombre, Optional<Long> id_temporada) {
+    public Page<CategoriaDTO> getPage(Pageable pageable, Optional<String> nombre, Optional<Long> id_temporada) {
         if (oSessionService.isEquipoAdmin() || oSessionService.isUsuario()) {
             Long myClub = oSessionService.getIdClub();
             if (id_temporada.isPresent()) {
@@ -49,27 +58,27 @@ public class CategoriaService {
                 }
             } else {
                 // when no temporada filter provided, return only those belonging to the user's club
-                return oCategoriaRepository.findByTemporadaClubId(myClub, pageable);
+                return toPageDTO(oCategoriaRepository.findByTemporadaClubId(myClub, pageable));
             }
         }
         if(nombre.isPresent() && !nombre.get().isEmpty()) {
-            return oCategoriaRepository.findByNombreContainingIgnoreCase(nombre.get(), pageable);
+            return toPageDTO(oCategoriaRepository.findByNombreContainingIgnoreCase(nombre.get(), pageable));
         } else if( id_temporada.isPresent()) {
-            return oCategoriaRepository.findByTemporadaId(id_temporada.get(), pageable);
+            return toPageDTO(oCategoriaRepository.findByTemporadaId(id_temporada.get(), pageable));
         } else {
-            return oCategoriaRepository.findAll(pageable);
+            return toPageDTO(oCategoriaRepository.findAll(pageable));
         }
     }
 
-    public CategoriaEntity create(CategoriaEntity oCategoriaEntity) {
+    public CategoriaDTO create(CategoriaEntity oCategoriaEntity) {
         // regular usuarios cannot create categorias
         oSessionService.denyUsuario();
         oCategoriaEntity.setId(null);
         oCategoriaEntity.setTemporada(oTemporadaService.get(oCategoriaEntity.getTemporada().getId()));
-        return oCategoriaRepository.save(oCategoriaEntity);
+        return toDTO(oCategoriaRepository.save(oCategoriaEntity));
     }
 
-    public CategoriaEntity update(CategoriaEntity oCategoriaEntity) {
+    public CategoriaDTO update(CategoriaEntity oCategoriaEntity) {
         // regular usuarios cannot modify categorias
         oSessionService.denyUsuario();
         CategoriaEntity oCategoriaExistente = oCategoriaRepository.findById(oCategoriaEntity.getId())
@@ -77,7 +86,7 @@ public class CategoriaService {
                         "Categoria no encontrado con id: " + oCategoriaEntity.getId()));
         oCategoriaExistente.setNombre(oCategoriaEntity.getNombre());
         oCategoriaExistente.setTemporada(oTemporadaService.get(oCategoriaEntity.getTemporada().getId()));
-        return oCategoriaRepository.save(oCategoriaExistente);
+        return toDTO(oCategoriaRepository.save(oCategoriaExistente));
     }
 
     public Long delete(Long id) {

@@ -10,6 +10,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import net.ausiasmarch.gesportin.dto.ClubDTO;
 import net.ausiasmarch.gesportin.entity.ArticuloEntity;
 import net.ausiasmarch.gesportin.entity.CategoriaEntity;
 import net.ausiasmarch.gesportin.entity.ClubEntity;
@@ -92,6 +93,18 @@ public class ClubService {
 
     private final Random random = new Random();
 
+    private ClubDTO toDTO(ClubEntity entity) {
+        return new ClubDTO(entity,
+                oClubRepository.countTemporadasByClubId(entity.getId()),
+                oClubRepository.countNoticiasByClubId(entity.getId()),
+                oClubRepository.countTipoarticulosByClubId(entity.getId()),
+                oClubRepository.countUsuariosByClubId(entity.getId()));
+    }
+
+    private Page<ClubDTO> toPageDTO(Page<ClubEntity> page) {
+        return page.map(this::toDTO);
+    }
+
     private final String[] descripciones1 = {
         "Atlético", "Deportivo", "Real club", "Unión deportiva",
         "Sociedad deportiva", "Socidad nacional", "Agrupación deportiva", "Club deportivo",
@@ -120,41 +133,39 @@ public class ClubService {
         "Jiménez", "Moreno", "Muñoz", "Alonso", "Gutiérrez", "Romero", "Díaz", "Torres", "Ruiz", "Hernández",
         "Vázquez", "Castro"};
 
-    public ClubEntity get(Long id) {
+    public ClubDTO get(Long id) {
         // equipo administrators may only view their own club
         oSessionService.checkSameClub(id);
-        return oClubRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Club no encontrado con id: " + id));
+        return toDTO(oClubRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Club no encontrado con id: " + id)));
     }
 
-    public Page<ClubEntity> getPage(Pageable pageable) {
+    public Page<ClubDTO> getPage(Pageable pageable) {
         if (oSessionService.isEquipoAdmin() || oSessionService.isUsuario()) {
             Long myClub = oSessionService.getIdClub();
             if (myClub == null) {
-                // should not happen, but just in case
                 return org.springframework.data.domain.Page.empty(pageable);
             }
-            // return a single-item page containing only the user's club
             ClubEntity club = oClubRepository.findById(myClub).orElse(null);
             if (club == null) {
                 return org.springframework.data.domain.Page.empty(pageable);
             }
-            java.util.List<ClubEntity> list = java.util.Collections.singletonList(club);
+            java.util.List<ClubDTO> list = java.util.Collections.singletonList(toDTO(club));
             return new org.springframework.data.domain.PageImpl<>(list, pageable, 1);
         }
-        return oClubRepository.findAll(pageable);
+        return toPageDTO(oClubRepository.findAll(pageable));
     }
 
-    public ClubEntity create(ClubEntity oClubEntity) {
+    public ClubDTO create(ClubEntity oClubEntity) {
         // equipo admins and regular usuarios are not allowed to create clubs
         oSessionService.denyEquipoAdmin();
         oSessionService.denyUsuario();
         oClubEntity.setId(null);
         oClubEntity.setFechaAlta(LocalDateTime.now());
-        return oClubRepository.save(oClubEntity);
+        return toDTO(oClubRepository.save(oClubEntity));
     }
 
-    public ClubEntity update(ClubEntity oClubEntity) {
+    public ClubDTO update(ClubEntity oClubEntity) {
         // equipo admins and regular usuarios are not allowed to modify club data
         oSessionService.denyEquipoAdmin();
         oSessionService.denyUsuario();
@@ -165,7 +176,7 @@ public class ClubService {
         oClubExistente.setDireccion(oClubEntity.getDireccion());
         oClubExistente.setTelefono(oClubEntity.getTelefono());
         oClubExistente.setFechaAlta(oClubEntity.getFechaAlta());
-        return oClubRepository.save(oClubExistente);
+        return toDTO(oClubRepository.save(oClubExistente));
     }
 
     public Long delete(Long id) {
